@@ -205,12 +205,20 @@
     }
 
     .tab-btn.is-active,
-    .year-btn.is-active,
+    .year-btn.is-active {
+      color: #ffffff;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.42), rgba(79, 70, 229, 0.24));
+      border-color: rgba(165, 180, 252, 0.8);
+      box-shadow: 0 0 0 1px rgba(165, 180, 252, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
     .filter-btn.is-active,
     .tag-pill.is-active {
-      color: var(--text);
-      background: rgba(99, 102, 241, 0.16);
-      border-color: rgba(99, 102, 241, 0.28);
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.34) !important;
+      box-shadow: 0 0 0 2px rgba(165, 180, 252, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      transform: translateY(-1px);
+      filter: saturate(1.18) brightness(1.12);
     }
 
     .tab-btn:active,
@@ -232,9 +240,10 @@
     }
 
     .icon-btn.is-active {
-      color: var(--text);
-      border-color: rgba(99, 102, 241, 0.3);
-      background: rgba(99, 102, 241, 0.12);
+      color: #ffffff;
+      border-color: rgba(165, 180, 252, 0.82);
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.4), rgba(79, 70, 229, 0.2));
+      box-shadow: 0 0 0 1px rgba(165, 180, 252, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
     .icon-btn--danger {
@@ -374,7 +383,7 @@
       position: sticky;
       top: 0;
       z-index: 5;
-      padding: 10px 12px;
+      padding: 8px 12px;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       background: linear-gradient(180deg, rgba(15, 17, 23, 0.98), rgba(15, 17, 23, 0.92));
@@ -391,7 +400,7 @@
       min-width: 0;
       border-bottom: 1px solid rgba(45, 49, 72, 0.9);
       content-visibility: auto;
-      contain-intrinsic-size: 112px;
+      contain-intrinsic-size: 84px;
       background: transparent;
     }
 
@@ -403,7 +412,7 @@
     .day-date {
       width: var(--date-col);
       min-width: var(--date-col);
-      padding: 10px 8px 10px 12px;
+      padding: 7px 6px 7px 10px;
       border-right: 1px solid rgba(45, 49, 72, 0.85);
       color: var(--text-muted);
       font-size: 12px;
@@ -412,7 +421,7 @@
 
     .day-date .weekday {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       font-weight: 700;
       font-size: 12px;
     }
@@ -435,22 +444,22 @@
     .day-body {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
+      gap: 6px;
       align-items: start;
       min-width: 0;
-      padding: 8px 10px;
+      padding: 5px 8px;
     }
 
     .day-entries {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
     }
 
     .empty-day {
-      min-height: 44px;
-      padding: 12px;
+      min-height: 36px;
+      padding: 8px 10px;
       border: 1px dashed rgba(71, 85, 105, 0.4);
       border-radius: var(--radius-md);
       color: var(--text-faint);
@@ -463,18 +472,18 @@
     .entry-item {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 6px;
+      gap: 4px;
       align-items: start;
       min-width: 0;
       border: 1px solid rgba(45, 49, 72, 0.95);
-      border-radius: 14px;
+      border-radius: 12px;
       background: linear-gradient(180deg, rgba(30, 34, 53, 0.96), rgba(26, 29, 46, 0.96));
     }
 
     .entry-main {
       min-width: 0;
-      min-height: 44px;
-      padding: 10px 12px;
+      min-height: 36px;
+      padding: 7px 10px;
       display: block;
       text-align: left;
       border: 0;
@@ -485,7 +494,7 @@
     .entry-text {
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 4;
+      -webkit-line-clamp: 3;
       overflow: hidden;
       word-break: break-word;
       white-space: pre-wrap;
@@ -494,17 +503,30 @@
     .entry-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
+      gap: 4px;
+      margin-top: 5px;
       min-width: 0;
+    }
+
+    .calendar-wrap .entry-meta {
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    .calendar-wrap .tag-chip {
+      flex: 0 0 auto;
+    }
+
+    .calendar-wrap .entry-text {
+      -webkit-line-clamp: 2;
     }
 
     .tag-chip {
       display: inline-flex;
       align-items: center;
       max-width: 100%;
-      min-height: 22px;
-      padding: 2px 8px;
+      min-height: 18px;
+      padding: 0 6px;
       border-radius: var(--radius-full);
       border: 1px solid rgba(255, 255, 255, 0.06);
       font-size: 12px;
@@ -984,6 +1006,7 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZieHRkZWVkb3pjdmhjYW1oaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTIyNTAsImV4cCI6MjA4ODkyODI1MH0.Ners2V_WXlt2sTh8UtKC6bk7ZcZn2LgfUzbFExpz9ik';
     const HAS_SUPABASE_CONFIG = !SUPABASE_URL.startsWith('[') && !SUPABASE_ANON_KEY.startsWith('[');
     const { createClient } = supabase;
+
 
     const cookieStorage = {
       getItem(key) {
@@ -1570,7 +1593,7 @@
       state.pendingScrollDate = today;
       renderHeader();
       renderBottomBar();
-      renderMain(false, false);
+      renderMain(false, true);
     }
 
     function scrollToDateRow(dateStr) {
@@ -1579,8 +1602,22 @@
         refs.main.scrollTop = 0;
         return;
       }
-      const top = row.offsetTop - 44;
-      refs.main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+
+      const alignRow = () => {
+        const mainRect = refs.main.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        const desiredTop = Math.max(20, Math.min(96, Math.round(refs.main.clientHeight * 0.28)));
+        const delta = rowRect.top - mainRect.top - desiredTop;
+        if (Math.abs(delta) > 1) refs.main.scrollTop += delta;
+      };
+
+      row.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+      alignRow();
+      requestAnimationFrame(() => {
+        alignRow();
+        setTimeout(alignRow, 80);
+        setTimeout(alignRow, 220);
+      });
     }
 
     function openEntryModal(entryOrDraft) {
