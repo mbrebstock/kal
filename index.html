@@ -155,9 +155,9 @@
     }
 
     .brand {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
       border: 1px solid var(--border);
       border-radius: 14px;
       display: inline-flex;
@@ -400,7 +400,7 @@
       min-width: 0;
       border-bottom: 1px solid rgba(45, 49, 72, 0.9);
       content-visibility: auto;
-      contain-intrinsic-size: 84px;
+      contain-intrinsic-size: 56px;
       background: transparent;
     }
 
@@ -412,7 +412,7 @@
     .day-date {
       width: var(--date-col);
       min-width: var(--date-col);
-      padding: 7px 6px 7px 10px;
+      padding: 4px 6px 4px 10px;
       border-right: 1px solid rgba(45, 49, 72, 0.85);
       color: var(--text-muted);
       font-size: 12px;
@@ -421,7 +421,7 @@
 
     .day-date .weekday {
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       font-weight: 700;
       font-size: 12px;
     }
@@ -444,22 +444,22 @@
     .day-body {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 6px;
+      gap: 4px;
       align-items: start;
       min-width: 0;
-      padding: 5px 8px;
+      padding: 2px 6px;
     }
 
     .day-entries {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       min-width: 0;
     }
 
     .empty-day {
-      min-height: 36px;
-      padding: 8px 10px;
+      min-height: 28px;
+      padding: 5px 8px;
       border: 1px dashed rgba(71, 85, 105, 0.4);
       border-radius: var(--radius-md);
       color: var(--text-faint);
@@ -472,19 +472,19 @@
     .entry-item {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 4px;
-      align-items: start;
+      gap: 2px;
+      align-items: center;
       min-width: 0;
-      border: 1px solid rgba(45, 49, 72, 0.95);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(30, 34, 53, 0.96), rgba(26, 29, 46, 0.96));
+      border: 0;
+      border-radius: 0;
+      background: transparent;
     }
 
     .entry-main {
       min-width: 0;
-      min-height: 36px;
-      padding: 7px 10px;
-      display: block;
+      min-height: 28px;
+      padding: 3px 4px;
+      display: flex;
       text-align: left;
       border: 0;
       background: transparent;
@@ -503,30 +503,54 @@
     .entry-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 5px;
+      gap: 3px;
+      margin-top: 0;
       min-width: 0;
     }
 
+    .calendar-wrap .entry-main {
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
     .calendar-wrap .entry-meta {
+      flex: 0 1 auto;
       flex-wrap: nowrap;
       overflow: hidden;
+      max-width: 48%;
     }
 
     .calendar-wrap .tag-chip {
       flex: 0 0 auto;
+      min-height: 16px;
+      padding: 0 4px;
+      font-size: 12px;
+      line-height: 1.1;
     }
 
     .calendar-wrap .entry-text {
-      -webkit-line-clamp: 2;
+      flex: 1 1 auto;
+      min-width: 0;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      -webkit-line-clamp: unset;
+      line-height: 1.2;
+    }
+
+    .calendar-wrap .entry-item + .entry-item {
+      border-top: 1px dotted rgba(71, 85, 105, 0.32);
+      padding-top: 1px;
     }
 
     .tag-chip {
       display: inline-flex;
       align-items: center;
       max-width: 100%;
-      min-height: 18px;
-      padding: 0 6px;
+      min-height: 16px;
+      padding: 0 5px;
       border-radius: var(--radius-full);
       border: 1px solid rgba(255, 255, 255, 0.06);
       font-size: 12px;
@@ -549,10 +573,22 @@
       align-items: center;
       justify-content: center;
       opacity: 1;
-      margin: 4px;
+      margin: 0;
     }
 
     .add-entry-btn { align-self: flex-start; }
+
+    .calendar-wrap .add-entry-btn,
+    .calendar-wrap .entry-delete {
+      min-height: 36px;
+      min-width: 36px;
+      border-radius: 10px;
+    }
+
+    .calendar-wrap .empty-day {
+      font-size: 12px;
+      line-height: 1.2;
+    }
     .list-wrap, .search-results { display: flex; flex-direction: column; }
 
     .list-row, .search-row {
@@ -1006,7 +1042,6 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZieHRkZWVkb3pjdmhjYW1oaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTIyNTAsImV4cCI6MjA4ODkyODI1MH0.Ners2V_WXlt2sTh8UtKC6bk7ZcZn2LgfUzbFExpz9ik';
     const HAS_SUPABASE_CONFIG = !SUPABASE_URL.startsWith('[') && !SUPABASE_ANON_KEY.startsWith('[');
     const { createClient } = supabase;
-
 
     const cookieStorage = {
       getItem(key) {
@@ -1774,6 +1809,8 @@
 
       refs.modalRoot.querySelectorAll('[data-action="toggle-modal-tag"]').forEach(btn => {
         btn.addEventListener('click', () => {
+          const textarea = document.getElementById('entry-textarea');
+          if (textarea && state.modal?.type === 'entry') state.modal.text = textarea.value;
           const tagId = String(btn.dataset.tagId);
           if (state.modal.tags.has(String(tagId))) state.modal.tags.delete(String(tagId));
           else state.modal.tags.add(String(tagId));
@@ -1794,6 +1831,11 @@
           const tag = state.tags.find(item => String(item.id) === String(tagId));
           if (tag) await deleteTag(tag);
         });
+      });
+
+      const entryTextarea = document.getElementById('entry-textarea');
+      entryTextarea?.addEventListener('input', () => {
+        if (state.modal?.type === 'entry') state.modal.text = entryTextarea.value;
       });
 
       document.getElementById('entry-form')?.addEventListener('submit', async (event) => {
