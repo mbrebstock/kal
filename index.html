@@ -416,20 +416,28 @@
       border-right: 1px solid rgba(45, 49, 72, 0.85);
       color: var(--text-muted);
       font-size: 12px;
-      line-height: 1.2;
+      line-height: 1.1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     .day-date .weekday {
-      display: block;
-      margin-bottom: 1px;
+      display: inline;
+      margin-bottom: 0;
       font-weight: 700;
       font-size: 12px;
+      flex: 0 0 auto;
     }
 
     .day-date .full-date {
-      display: block;
+      display: inline;
       font-size: 12px;
-      word-break: break-word;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .day-row.is-today .day-date,
@@ -1038,8 +1046,8 @@
   <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    const SUPABASE_URL = 'https://vbxtdeedozcvhcamhipz.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZieHRkZWVkb3pjdmhjYW1oaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTIyNTAsImV4cCI6MjA4ODkyODI1MH0.Ners2V_WXlt2sTh8UtKC6bk7ZcZn2LgfUzbFExpz9ik';
+    const SUPABASE_URL = '[DEINE_SUPABASE_URL]';
+    const SUPABASE_ANON_KEY = '[DEIN_SUPABASE_ANON_KEY]';
     const HAS_SUPABASE_CONFIG = !SUPABASE_URL.startsWith('[') && !SUPABASE_ANON_KEY.startsWith('[');
     const { createClient } = supabase;
 
@@ -1476,9 +1484,9 @@
         const dayEntries = grouped.get(dateStr) || [];
         html += `
           <section class="day-row ${dateStr === today ? 'is-today' : ''}" data-day-row="${dateStr}">
-            <div class="day-date ${weekend ? 'is-weekend' : ''}">
+            <div class="day-date ${weekend ? 'is-weekend' : ''}" title="${formatDateLabel(dateStr)}" aria-label="${formatDateLabel(dateStr)}">
               <span class="weekday">${WEEKDAYS[current.getDay()]}</span>
-              <span class="full-date">${current.getDate()}.${current.getMonth() + 1}.${current.getFullYear()}</span>
+              <span class="full-date">${current.getDate()}.${current.getMonth() + 1}.</span>
             </div>
             <div class="day-body">
               <div class="day-entries">
