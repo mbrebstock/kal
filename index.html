@@ -20,7 +20,6 @@
       --accent:       #6366f1;
       --accent-hover: #4f46e5;
       --danger:       #ef4444;
-
       --success:      #22c55e;
       --overlay:      rgba(3, 6, 18, 0.78);
       --shadow:       0 18px 50px rgba(0, 0, 0, 0.38);
@@ -29,11 +28,9 @@
       --radius-lg:    16px;
       --radius-xl:    20px;
       --radius-full:  999px;
-
       --header-h:     52px;
       --bottom-h:     52px;
       --date-col:     82px;
-
       --space-1: 4px;
       --space-2: 8px;
       --space-3: 12px;
@@ -67,6 +64,9 @@
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
       overflow-x: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 26%),
+        var(--bg);
     }
 
     img, svg { display: block; max-width: 100%; }
@@ -85,14 +85,8 @@
       width: 100%;
     }
 
-    textarea {
-      min-height: 96px;
-      resize: vertical;
-    }
-
-    input::placeholder, textarea::placeholder {
-      color: var(--text-faint);
-    }
+    textarea { min-height: 96px; resize: vertical; }
+    input::placeholder, textarea::placeholder { color: var(--text-faint); }
 
     input:focus, textarea:focus, select:focus {
       border-color: var(--accent);
@@ -112,15 +106,13 @@
       top: -60px;
       z-index: 1000;
       background: var(--accent);
-      color: white;
+      color: #fff;
       padding: 10px 14px;
       border-radius: var(--radius-md);
       transition: top 0.2s ease;
     }
 
-    .skip-link:focus {
-      top: 12px;
-    }
+    .skip-link:focus { top: 12px; }
 
     #root, #modal-root, #toast-root {
       position: relative;
@@ -132,9 +124,6 @@
       flex-direction: column;
       height: 100dvh;
       overflow: hidden;
-      background:
-        radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 26%),
-        var(--bg);
     }
 
     .app-header {
@@ -152,8 +141,7 @@
       backdrop-filter: blur(12px);
     }
 
-    .header-left,
-    .header-right {
+    .header-left, .header-right {
       display: flex;
       align-items: center;
       gap: 6px;
@@ -180,10 +168,7 @@
       padding: 0;
     }
 
-    .brand svg {
-      width: 20px;
-      height: 20px;
-    }
+    .brand svg { width: 20px; height: 20px; }
 
     .view-tabs {
       display: inline-flex;
@@ -234,9 +219,7 @@
     .icon-btn:active,
     .btn:active,
     .tag-pill:active,
-    .color-dot:active {
-      transform: scale(0.98);
-    }
+    .color-dot:active { transform: scale(0.98); }
 
     .icon-btn {
       display: inline-flex;
@@ -260,11 +243,7 @@
       background: rgba(239, 68, 68, 0.12);
     }
 
-    .icon-btn svg,
-    .entry-delete svg {
-      width: 18px;
-      height: 18px;
-    }
+    .icon-btn svg, .entry-delete svg { width: 18px; height: 18px; }
 
     .header-search {
       width: min(100%, 440px);
@@ -294,16 +273,8 @@
       transition: max-height 0.18s ease, opacity 0.18s ease;
     }
 
-    .filter-wrap.is-open {
-      max-height: 120px;
-      opacity: 1;
-    }
-
-    .filter-wrap.is-closed {
-      max-height: 0;
-      opacity: 0;
-      border-bottom-color: transparent;
-    }
+    .filter-wrap.is-open { max-height: 120px; opacity: 1; }
+    .filter-wrap.is-closed { max-height: 0; opacity: 0; border-bottom-color: transparent; }
 
     .filter-bar {
       display: flex;
@@ -329,18 +300,10 @@
       background: var(--surface);
       font-size: 13px;
       font-weight: 700;
-      color: var(--text-muted);
       white-space: nowrap;
     }
 
-    .filter-btn.filter-all.is-active {
-      color: var(--text);
-    }
-
-    .manage-tags-btn {
-      margin-left: auto;
-      flex: 0 0 auto;
-    }
+    .manage-tags-btn { margin-left: auto; flex: 0 0 auto; }
 
     .app-main {
       flex: 1;
@@ -378,12 +341,9 @@
 
     .year-strip::-webkit-scrollbar,
     .filter-bar::-webkit-scrollbar,
-    .bottom-bar::-webkit-scrollbar {
-      display: none;
-    }
+    .bottom-bar::-webkit-scrollbar { display: none; }
 
-    .year-btn,
-    .today-btn {
+    .year-btn, .today-btn {
       flex: 0 0 auto;
       padding: 0 12px;
       border-color: var(--border);
@@ -394,14 +354,8 @@
       white-space: nowrap;
     }
 
-    .today-btn {
-      margin-left: auto;
-    }
-
-    .today-btn svg {
-      width: 16px;
-      height: 16px;
-    }
+    .today-btn { margin-left: auto; }
+    .today-btn svg { width: 16px; height: 16px; }
 
     .panel-empty,
     .panel-loading,
@@ -411,19 +365,10 @@
     }
 
     .panel-empty strong,
-    .search-help strong {
-      color: var(--text);
-    }
+    .search-help strong { color: var(--text); }
 
-    .calendar-wrap,
-    .list-wrap,
-    .search-wrap {
-      min-height: 100%;
-    }
-
-    .calendar-grid {
-      width: 100%;
-    }
+    .calendar-wrap, .list-wrap, .search-wrap { min-height: 100%; }
+    .calendar-grid { width: 100%; }
 
     .month-row {
       position: sticky;
@@ -475,6 +420,7 @@
     .day-date .full-date {
       display: block;
       font-size: 12px;
+      word-break: break-word;
     }
 
     .day-row.is-today .day-date,
@@ -484,9 +430,7 @@
       font-weight: 700;
     }
 
-    .day-date.is-weekend {
-      color: #6e8198;
-    }
+    .day-date.is-weekend { color: #6e8198; }
 
     .day-body {
       display: grid;
@@ -586,29 +530,19 @@
       margin: 4px;
     }
 
-    .add-entry-btn {
-      align-self: flex-start;
-    }
+    .add-entry-btn { align-self: flex-start; }
+    .list-wrap, .search-results { display: flex; flex-direction: column; }
 
-    .list-wrap,
-    .search-results {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .list-row,
-    .search-row {
+    .list-row, .search-row {
       display: grid;
       grid-template-columns: 82px minmax(0, 1fr);
-      gap: 0;
       border-bottom: 1px solid rgba(45, 49, 72, 0.9);
       content-visibility: auto;
       contain-intrinsic-size: 88px;
       min-width: 0;
     }
 
-    .list-date,
-    .search-date {
+    .list-date, .search-date {
       padding: 12px 8px 12px 12px;
       border-right: 1px solid rgba(45, 49, 72, 0.85);
       color: var(--text-muted);
@@ -616,16 +550,14 @@
       line-height: 1.2;
     }
 
-    .list-date strong,
-    .search-date strong {
+    .list-date strong, .search-date strong {
       display: block;
       color: var(--text);
       font-size: 12px;
       margin-bottom: 4px;
     }
 
-    .list-main,
-    .search-main {
+    .list-main, .search-main {
       min-width: 0;
       padding: 10px 12px;
       display: block;
@@ -635,9 +567,7 @@
       color: inherit;
     }
 
-    .list-main:hover,
-    .search-main:hover,
-    .entry-main:hover {
+    .list-main:hover, .search-main:hover, .entry-main:hover {
       background: rgba(99, 102, 241, 0.04);
       border-radius: 12px;
     }
@@ -683,8 +613,7 @@
       box-shadow: var(--shadow);
     }
 
-    .modal-head,
-    .modal-foot {
+    .modal-head, .modal-foot {
       padding: 14px 16px;
       border-bottom: 1px solid rgba(45, 49, 72, 0.95);
       display: flex;
@@ -735,14 +664,20 @@
       color: var(--text-faint);
     }
 
-    .modal-error,
-    .auth-error {
+    .modal-error, .auth-error, .setup-note {
       border: 1px solid rgba(239, 68, 68, 0.24);
       background: rgba(239, 68, 68, 0.12);
       color: #fecaca;
       padding: 10px 12px;
       border-radius: 12px;
       font-size: 13px;
+    }
+
+    .setup-note {
+      border-color: rgba(99, 102, 241, 0.24);
+      background: rgba(99, 102, 241, 0.12);
+      color: #c7d2fe;
+      text-align: left;
     }
 
     .tag-picker {
@@ -786,10 +721,7 @@
       border-color: var(--accent-hover);
     }
 
-    .btn-secondary:hover,
-    .btn:hover:not(.btn-primary) {
-      background: var(--surface-2);
-    }
+    .btn:hover:not(.btn-primary) { background: var(--surface-2); }
 
     .btn-danger {
       background: rgba(239, 68, 68, 0.14);
@@ -869,10 +801,6 @@
       display: grid;
       place-items: center;
       padding: 20px;
-      background:
-        radial-gradient(circle at top right, rgba(99, 102, 241, 0.12), transparent 30%),
-        radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.07), transparent 28%),
-        var(--bg);
     }
 
     .login-card {
@@ -904,10 +832,7 @@
       flex: 0 0 auto;
     }
 
-    .logo-mark svg {
-      width: 22px;
-      height: 22px;
-    }
+    .logo-mark svg { width: 22px; height: 22px; }
 
     .login-title {
       font-size: 20px;
@@ -954,7 +879,6 @@
     }
 
     .toast {
-      pointer-events: none;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -966,20 +890,9 @@
       box-shadow: var(--shadow);
     }
 
-    .toast--error {
-      border-color: rgba(239, 68, 68, 0.24);
-    }
-
-    .toast-icon {
-      width: 18px;
-      height: 18px;
-      color: var(--success);
-      flex: 0 0 auto;
-    }
-
-    .toast--error .toast-icon {
-      color: var(--danger);
-    }
+    .toast--error { border-color: rgba(239, 68, 68, 0.24); }
+    .toast-icon { width: 18px; height: 18px; color: var(--success); flex: 0 0 auto; }
+    .toast--error .toast-icon { color: var(--danger); }
 
     .skeleton-list {
       padding: 10px 12px 18px;
@@ -1006,14 +919,9 @@
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .entry-delete {
-        opacity: 0;
-      }
-
+      .entry-delete { opacity: 0; }
       .entry-item:hover .entry-delete,
-      .entry-delete:focus-visible {
-        opacity: 1;
-      }
+      .entry-delete:focus-visible { opacity: 1; }
     }
 
     @media (min-width: 768px) {
@@ -1021,10 +929,7 @@
         align-items: center;
         padding: 24px;
       }
-
-      .modal-card {
-        border-radius: 24px;
-      }
+      .modal-card { border-radius: 24px; }
     }
 
     @media (max-width: 520px) {
@@ -1044,9 +949,7 @@
         padding-top: 6px;
       }
 
-      .brand {
-        display: none;
-      }
+      .brand { display: none; }
 
       .view-tabs {
         width: 100%;
@@ -1079,6 +982,7 @@
   <script>
     const SUPABASE_URL = '[DEINE_SUPABASE_URL]';
     const SUPABASE_ANON_KEY = '[DEIN_SUPABASE_ANON_KEY]';
+    const HAS_SUPABASE_CONFIG = !SUPABASE_URL.startsWith('[') && !SUPABASE_ANON_KEY.startsWith('[');
     const { createClient } = supabase;
 
     const cookieStorage = {
@@ -1097,14 +1001,14 @@
       }
     };
 
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    const db = HAS_SUPABASE_CONFIG ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         storage: cookieStorage,
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true
       }
-    });
+    }) : null;
 
     const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
     const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -1138,13 +1042,16 @@
       toastTimer: null,
       suppressRemoteUntil: 0,
       pendingScrollDate: null,
-      isSaving: false
+      scrollPositions: {
+        calendar: 0,
+        list: 0,
+        search: 0
+      },
+      searchInputFocused: false
     };
 
     function safeIcons() {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function brandSVG() {
@@ -1167,7 +1074,7 @@
     }
 
     function escapeRegExp(value) {
-      return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     function toRgb(hex) {
@@ -1191,43 +1098,21 @@
       return new Date(y, m - 1, d);
     }
 
+    function todayString() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
     function formatDateLabel(dateStr) {
       const dt = parseDate(dateStr);
       return `${WEEKDAYS[dt.getDay()]}, ${dt.getDate()}.${dt.getMonth() + 1}.${dt.getFullYear()}`;
-    }
-
-    function formatDayParts(dateStr) {
-      const dt = parseDate(dateStr);
-      return {
-        weekday: WEEKDAYS[dt.getDay()],
-        full: `${dt.getDate()}.${dt.getMonth() + 1}.${dt.getFullYear()}`,
-        weekend: dt.getDay() === 0 || dt.getDay() === 6,
-        monthIndex: dt.getMonth(),
-        year: dt.getFullYear()
-      };
-    }
-
-    function formatMonthYear(dateObj) {
-      return `${MONTHS[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
-    }
-
-    function todayString() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const d = String(now.getDate()).padStart(2, '0');
-      return `${y}-${m}-${d}`;
     }
 
     function formatCreatedAt(value) {
       if (!value) return '';
       const dt = new Date(value);
       return dt.toLocaleString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
     }
 
@@ -1251,16 +1136,6 @@
       return state.entries.filter(entryMatchesFilters);
     }
 
-    function groupEntriesByDate(entries) {
-      const map = new Map();
-      entries.forEach(entry => {
-        const key = entry.date;
-        if (!map.has(key)) map.set(key, []);
-        map.get(key).push(entry);
-      });
-      return map;
-    }
-
     function sortedListEntries() {
       return [...getFilteredEntries()].sort((a, b) => {
         const createdDiff = new Date(b.created_at || 0) - new Date(a.created_at || 0);
@@ -1270,7 +1145,7 @@
     }
 
     function sortedSearchEntries(query) {
-      const q = query.trim().toLowerCase();
+      const q = String(query || '').trim().toLowerCase();
       if (!q) return [];
       return getFilteredEntries()
         .filter(entry => String(entry.text || '').toLowerCase().includes(q))
@@ -1283,10 +1158,11 @@
 
     function excerptWithHighlight(text, query) {
       const source = String(text || '');
-      const q = query.trim();
+      const q = String(query || '').trim();
       if (!q) return escapeHtml(source.slice(0, 180));
       const lower = source.toLowerCase();
       const index = lower.indexOf(q.toLowerCase());
+      if (index === -1) return escapeHtml(source.slice(0, 180));
       const start = index > 40 ? index - 40 : 0;
       const end = Math.min(source.length, index + q.length + 80);
       const prefix = start > 0 ? '…' : '';
@@ -1317,6 +1193,26 @@
       return message;
     }
 
+    function renderSetupScreen() {
+      refs.root.innerHTML = `
+        <div class="login-shell">
+          <section class="login-card" aria-labelledby="setup-title">
+            <div class="login-brand">
+              <div class="logo-mark" aria-hidden="true">${brandSVG()}</div>
+              <div>
+                <div id="setup-title" class="login-title">Kalender</div>
+                <div class="login-copy">Supabase-Konfiguration fehlt noch.</div>
+              </div>
+            </div>
+            <div class="setup-note">
+              Trage oben im Script <strong>SUPABASE_URL</strong> und <strong>SUPABASE_ANON_KEY</strong> ein und deploye danach erneut.
+            </div>
+          </section>
+        </div>
+      `;
+      safeIcons();
+    }
+
     function renderLogin(error = '', submitting = false) {
       refs.root.innerHTML = `
         <div class="login-shell">
@@ -1329,3 +1225,809 @@
               </div>
             </div>
             <form id="login-form" class="login-form" novalidate>
+              <div class="field">
+                <label class="label" for="login-email">E-Mail</label>
+                <input id="login-email" name="email" type="email" autocomplete="email" required placeholder="name@example.com" />
+              </div>
+              <div class="field">
+                <label class="label" for="login-password">Passwort</label>
+                <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
+              </div>
+              ${error ? `<div class="auth-error" role="alert">${escapeHtml(error)}</div>` : ''}
+              <div class="helper-row">
+                <span class="helper-text">Aktive Session wird automatisch wiederverwendet.</span>
+              </div>
+              <button class="btn btn-primary" type="submit" ${submitting ? 'disabled' : ''}>${submitting ? 'Anmeldung…' : 'Anmelden'}</button>
+            </form>
+          </section>
+        </div>
+      `;
+      const form = document.getElementById('login-form');
+      const emailInput = document.getElementById('login-email');
+      emailInput?.focus();
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = form.email.value.trim();
+        const password = form.password.value;
+        renderLogin('', true);
+        try {
+          const { error: signInError } = await db.auth.signInWithPassword({ email, password });
+          if (signInError) throw signInError;
+        } catch (err) {
+          renderLogin(authErrorMessage(err?.message || ''));
+        }
+      });
+      safeIcons();
+    }
+
+    function renderAppShell() {
+      refs.root.innerHTML = `
+        <div class="app-shell">
+          <header id="app-header" class="app-header"></header>
+          <div id="filter-wrap" class="filter-wrap"></div>
+          <main id="main-content" class="app-main" tabindex="-1"></main>
+          <nav id="bottom-bar" class="bottom-bar" aria-label="Jahresnavigation"></nav>
+        </div>
+      `;
+      refs.header = document.getElementById('app-header');
+      refs.filterWrap = document.getElementById('filter-wrap');
+      refs.main = document.getElementById('main-content');
+      refs.bottom = document.getElementById('bottom-bar');
+      refs.main.addEventListener('scroll', () => {
+        state.scrollPositions[state.view] = refs.main.scrollTop;
+      }, { passive: true });
+      safeIcons();
+    }
+
+    function renderHeader() {
+      refs.header.className = `app-header ${state.view === 'search' ? 'has-search' : ''}`;
+      refs.header.innerHTML = `
+        <div class="header-left">
+          <button class="brand" type="button" aria-label="Heute anzeigen" data-action="go-today-brand">${brandSVG()}</button>
+          <div class="view-tabs" role="tablist" aria-label="Ansichten">
+            <button class="tab-btn ${state.view === 'calendar' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'calendar'}" data-view="calendar">Kalender</button>
+            <button class="tab-btn ${state.view === 'list' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'list'}" data-view="list">Liste</button>
+            <button class="tab-btn ${state.view === 'search' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'search'}" data-view="search">Suche</button>
+          </div>
+        </div>
+        <div class="header-center">
+          ${state.view === 'search' ? `
+            <div class="header-search">
+              <i data-lucide="search"></i>
+              <input id="search-input" type="search" inputmode="search" placeholder="Einträge durchsuchen" value="${escapeHtml(state.searchQuery)}" aria-label="Einträge durchsuchen" />
+            </div>
+          ` : ''}
+        </div>
+        <div class="header-right">
+          <button class="icon-btn ${state.view === 'search' ? 'is-active' : ''}" type="button" data-action="switch-search" aria-label="Suche öffnen"><i data-lucide="search"></i></button>
+          <button class="icon-btn ${state.showFilters ? 'is-active' : ''}" type="button" data-action="toggle-filters" aria-label="Tag-Filter ein- oder ausblenden"><i data-lucide="tags"></i></button>
+          <button class="icon-btn" type="button" data-action="export-csv" aria-label="CSV exportieren"><i data-lucide="download"></i></button>
+          <button class="icon-btn" type="button" data-action="logout" aria-label="Abmelden"><i data-lucide="log-out"></i></button>
+        </div>
+      `;
+
+      refs.header.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+      });
+
+      refs.header.querySelector('[data-action="go-today-brand"]')?.addEventListener('click', goToToday);
+      refs.header.querySelector('[data-action="switch-search"]')?.addEventListener('click', () => switchView('search'));
+      refs.header.querySelector('[data-action="toggle-filters"]')?.addEventListener('click', () => {
+        state.showFilters = !state.showFilters;
+        renderHeader();
+        renderFilterBar();
+      });
+      refs.header.querySelector('[data-action="export-csv"]')?.addEventListener('click', exportCsv);
+      refs.header.querySelector('[data-action="logout"]')?.addEventListener('click', logout);
+
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+          state.searchQuery = event.target.value;
+          clearTimeout(state.searchTimer);
+          state.searchTimer = setTimeout(() => {
+            state.searchDebounced = state.searchQuery;
+            renderMain(true);
+          }, 300);
+        });
+        requestAnimationFrame(() => {
+          if (state.view === 'search') searchInput.focus();
+        });
+      }
+      safeIcons();
+    }
+
+    function renderFilterBar() {
+      refs.filterWrap.className = `filter-wrap ${state.showFilters ? 'is-open' : 'is-closed'}`;
+      refs.filterWrap.innerHTML = state.showFilters ? `
+        <div class="filter-bar" aria-label="Tag-Filter">
+          <span class="filter-label">Filter:</span>
+          <button class="filter-btn filter-all ${state.activeFilters.size === 0 ? 'is-active' : ''}" type="button" data-filter="all">Alle</button>
+          ${state.tags.map(tag => `
+            <button class="filter-btn ${state.activeFilters.has(String(tag.id)) ? 'is-active' : ''}" type="button" data-filter="${escapeHtml(String(tag.id))}" style="${tagChipStyle(tag.color)}">${escapeHtml(tag.name)}</button>
+          `).join('')}
+          <button class="icon-btn manage-tags-btn" type="button" data-action="manage-tags" aria-label="Tags verwalten"><i data-lucide="settings-2"></i></button>
+        </div>
+      ` : '';
+
+      refs.filterWrap.querySelector('[data-filter="all"]')?.addEventListener('click', () => {
+        state.activeFilters = new Set();
+        renderFilterBar();
+        renderMain(false);
+      });
+
+      refs.filterWrap.querySelectorAll('[data-filter]').forEach(btn => {
+        const value = btn.dataset.filter;
+        if (value === 'all') return;
+        btn.addEventListener('click', () => {
+          const key = String(value);
+          if (state.activeFilters.has(String(key))) state.activeFilters.delete(String(key));
+          else state.activeFilters.add(String(key));
+          renderFilterBar();
+          renderMain(false);
+        });
+      });
+
+      refs.filterWrap.querySelector('[data-action="manage-tags"]')?.addEventListener('click', openTagsModal);
+      safeIcons();
+    }
+
+    function renderBottomBar() {
+      const currentYear = new Date().getFullYear();
+      const years = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+      refs.bottom.innerHTML = `
+        <div class="year-strip">
+          ${years.map(year => `<button class="year-btn ${state.selectedYear === year ? 'is-active' : ''}" type="button" data-year="${year}">${year}</button>`).join('')}
+        </div>
+        <button class="today-btn btn" type="button" data-action="today"><i data-lucide="arrow-up"></i>&nbsp;Heute</button>
+      `;
+      refs.bottom.querySelectorAll('[data-year]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.selectedYear = Number(btn.dataset.year);
+          state.pendingScrollDate = null;
+          renderBottomBar();
+          renderMain(false, true);
+        });
+      });
+      refs.bottom.querySelector('[data-action="today"]')?.addEventListener('click', goToToday);
+      safeIcons();
+    }
+
+    function buildCalendarHTML() {
+      const grouped = new Map();
+      getFilteredEntries().forEach(entry => {
+        if (!grouped.has(entry.date)) grouped.set(entry.date, []);
+        grouped.get(entry.date).push(entry);
+      });
+
+      const year = state.selectedYear;
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31);
+      const today = todayString();
+      let current = new Date(start);
+      let lastMonth = -1;
+      let html = '<div class="calendar-wrap"><div class="calendar-grid" id="cal">';
+
+      while (current <= end) {
+        const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+        if (current.getMonth() !== lastMonth) {
+          lastMonth = current.getMonth();
+          html += `<div class="month-row">${MONTHS[current.getMonth()]} ${current.getFullYear()}</div>`;
+        }
+        const weekend = current.getDay() === 0 || current.getDay() === 6;
+        const dayEntries = grouped.get(dateStr) || [];
+        html += `
+          <section class="day-row ${dateStr === today ? 'is-today' : ''}" data-day-row="${dateStr}">
+            <div class="day-date ${weekend ? 'is-weekend' : ''}">
+              <span class="weekday">${WEEKDAYS[current.getDay()]}</span>
+              <span class="full-date">${current.getDate()}.${current.getMonth() + 1}.${current.getFullYear()}</span>
+            </div>
+            <div class="day-body">
+              <div class="day-entries">
+                ${dayEntries.length ? dayEntries.map(entry => `
+                  <article class="entry-item">
+                    <button class="entry-main" type="button" data-action="edit-entry" data-entry-id="${escapeHtml(String(entry.id))}">
+                      <div class="entry-text">${escapeHtml(entry.text)}</div>
+                      ${(entry.tags || []).length ? `<div class="entry-meta">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
+                    </button>
+                    <button class="entry-delete" type="button" data-action="delete-entry" data-entry-id="${escapeHtml(String(entry.id))}" aria-label="Eintrag löschen"><i data-lucide="trash-2"></i></button>
+                  </article>
+                `).join('') : `<div class="empty-day">Kein Eintrag</div>`}
+              </div>
+              <button class="icon-btn add-entry-btn" type="button" data-action="new-entry" data-date="${dateStr}" aria-label="Eintrag für ${formatDateLabel(dateStr)} anlegen"><i data-lucide="plus"></i></button>
+            </div>
+          </section>
+        `;
+        current.setDate(current.getDate() + 1);
+      }
+
+      html += '</div></div>';
+      return html;
+    }
+
+    function buildListHTML() {
+      const items = sortedListEntries();
+      if (!items.length) {
+        return `<div class="list-wrap"><div class="panel-empty"><strong>Keine Einträge gefunden.</strong><br />Passe die Tag-Filter an oder lege einen neuen Eintrag an.</div></div>`;
+      }
+      return `
+        <div class="list-wrap">
+          ${items.map(entry => `
+            <article class="list-row">
+              <div class="list-date">
+                <strong>${WEEKDAYS[parseDate(entry.date).getDay()]}</strong>
+                <span>${parseDate(entry.date).getDate()}.${parseDate(entry.date).getMonth() + 1}.${parseDate(entry.date).getFullYear()}</span>
+              </div>
+              <button class="list-main" type="button" data-action="edit-entry" data-entry-id="${escapeHtml(String(entry.id))}">
+                <div class="entry-text">${escapeHtml(entry.text)}</div>
+                ${(entry.tags || []).length ? `<div class="list-sub">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
+                <div class="list-created">Erstellt: ${escapeHtml(formatCreatedAt(entry.created_at))}</div>
+              </button>
+            </article>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function buildSearchHTML() {
+      const query = state.searchDebounced.trim();
+      if (!query) {
+        return `<div class="search-wrap"><div class="search-help"><strong>Suche aktiv.</strong><br />Tippe im Suchfeld oben, um Einträge sofort zu finden.</div></div>`;
+      }
+      const items = sortedSearchEntries(query);
+      if (!items.length) {
+        return `<div class="search-wrap"><div class="panel-empty"><strong>Keine Treffer.</strong><br />Für „${escapeHtml(query)}“ wurde nichts gefunden.</div></div>`;
+      }
+      return `
+        <div class="search-wrap">
+          <div class="search-results">
+            ${items.map(entry => `
+              <article class="search-row">
+                <div class="search-date">
+                  <strong>${WEEKDAYS[parseDate(entry.date).getDay()]}</strong>
+                  <span>${parseDate(entry.date).getDate()}.${parseDate(entry.date).getMonth() + 1}.${parseDate(entry.date).getFullYear()}</span>
+                </div>
+                <button class="search-main" type="button" data-action="jump-to-date" data-date="${entry.date}">
+                  <div>${excerptWithHighlight(entry.text, query)}</div>
+                  ${(entry.tags || []).length ? `<div class="list-sub">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
+                </button>
+              </article>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMain(preserveScroll = true, forceTop = false) {
+      if (!refs.main) return;
+      const previous = refs.main.scrollTop;
+      const remembered = preserveScroll ? previous : (state.scrollPositions[state.view] || 0);
+      let html = '';
+      if (state.loading) {
+        html = `<div class="panel-loading"><div class="skeleton-list"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div></div>`;
+      } else if (state.view === 'calendar') {
+        html = buildCalendarHTML();
+      } else if (state.view === 'list') {
+        html = buildListHTML();
+      } else {
+        html = buildSearchHTML();
+      }
+      refs.main.innerHTML = html;
+      bindMainEvents();
+      safeIcons();
+      requestAnimationFrame(() => {
+        if (state.pendingScrollDate) {
+          scrollToDateRow(state.pendingScrollDate);
+          state.pendingScrollDate = null;
+          return;
+        }
+        refs.main.scrollTop = forceTop ? 0 : remembered;
+      });
+    }
+
+    function bindMainEvents() {
+      refs.main.querySelectorAll('[data-action="new-entry"]').forEach(btn => {
+        btn.addEventListener('click', () => openEntryModal({ date: btn.dataset.date }));
+      });
+      refs.main.querySelectorAll('[data-action="edit-entry"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const entry = state.entries.find(item => String(item.id) === String(btn.dataset.entryId));
+          if (entry) openEntryModal(entry);
+        });
+      });
+      refs.main.querySelectorAll('[data-action="delete-entry"]').forEach(btn => {
+        btn.addEventListener('click', async (event) => {
+          event.stopPropagation();
+          const entry = state.entries.find(item => String(item.id) === String(btn.dataset.entryId));
+          if (entry) await deleteEntry(entry);
+        });
+      });
+      refs.main.querySelectorAll('[data-action="jump-to-date"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const date = btn.dataset.date;
+          state.selectedYear = parseDate(date).getFullYear();
+          state.view = 'calendar';
+          state.pendingScrollDate = date;
+          renderHeader();
+          renderBottomBar();
+          renderMain(false, false);
+        });
+      });
+    }
+
+    function switchView(view) {
+      if (view === state.view) return;
+      if (refs.main) state.scrollPositions[state.view] = refs.main.scrollTop;
+      state.view = view;
+      renderHeader();
+      renderMain(false, false);
+    }
+
+    function goToToday() {
+      const today = todayString();
+      state.selectedYear = parseDate(today).getFullYear();
+      state.view = 'calendar';
+      state.pendingScrollDate = today;
+      renderHeader();
+      renderBottomBar();
+      renderMain(false, false);
+    }
+
+    function scrollToDateRow(dateStr) {
+      const row = refs.main.querySelector(`[data-day-row="${CSS.escape(dateStr)}"]`);
+      if (!row) {
+        refs.main.scrollTop = 0;
+        return;
+      }
+      const top = row.offsetTop - 44;
+      refs.main.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+
+    function openEntryModal(entryOrDraft) {
+      const isEdit = Boolean(entryOrDraft.id);
+      state.modal = {
+        type: 'entry',
+        isEdit,
+        id: entryOrDraft.id || null,
+        date: entryOrDraft.date || todayString(),
+        text: entryOrDraft.text || '',
+        tags: new Set((entryOrDraft.tags || []).map(String)),
+        error: '',
+        saving: false
+      };
+      renderModal();
+    }
+
+    function openTagsModal() {
+      state.modal = {
+        type: 'tags',
+        name: '',
+        color: TAG_COLORS[0],
+        error: '',
+        saving: false,
+        deleting: null
+      };
+      renderModal();
+    }
+
+    function closeModal() {
+      state.modal = null;
+      refs.modalRoot.innerHTML = '';
+    }
+
+    function renderModal() {
+      const modal = state.modal;
+      if (!modal) {
+        refs.modalRoot.innerHTML = '';
+        return;
+      }
+
+      if (modal.type === 'entry') {
+        refs.modalRoot.innerHTML = `
+          <div class="modal-overlay" id="modal-overlay">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title">
+              <div class="modal-head">
+                <div>
+                  <div id="entry-modal-title" class="modal-title">${modal.isEdit ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}: ${escapeHtml(formatDateLabel(modal.date))}</div>
+                  <div class="modal-subtitle">Text und Tags verwalten.</div>
+                </div>
+                <button class="icon-btn" type="button" data-action="close-modal" aria-label="Modal schließen"><i data-lucide="x"></i></button>
+              </div>
+              <form id="entry-form">
+                <div class="modal-body">
+                  ${modal.error ? `<div class="modal-error" role="alert">${escapeHtml(modal.error)}</div>` : ''}
+                  <div class="field">
+                    <label class="label" for="entry-textarea">Eintrag</label>
+                    <textarea id="entry-textarea" name="text" rows="3" placeholder="Notiz für diesen Tag">${escapeHtml(modal.text)}</textarea>
+                  </div>
+                  <div class="field">
+                    <div class="label">Tags</div>
+                    <div class="tag-picker">
+                      ${state.tags.length ? state.tags.map(tag => `
+                        <button class="tag-pill ${modal.tags.has(String(tag.id)) ? 'is-active' : ''}" type="button" data-action="toggle-modal-tag" data-tag-id="${escapeHtml(String(tag.id))}" style="${tagChipStyle(tag.color)}">${escapeHtml(tag.name)}</button>
+                      `).join('') : '<div class="field-hint">Noch keine Tags vorhanden.</div>'}
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-foot">
+                  <div class="modal-actions">
+                    <button class="btn" type="button" data-action="close-modal">Abbrechen</button>
+                    <button class="btn btn-primary" type="submit">${modal.saving ? 'Speichern…' : 'Speichern'}</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      if (modal.type === 'tags') {
+        refs.modalRoot.innerHTML = `
+          <div class="modal-overlay" id="modal-overlay">
+            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tags-modal-title">
+              <div class="modal-head">
+                <div>
+                  <div id="tags-modal-title" class="modal-title">Tags verwalten</div>
+                  <div class="modal-subtitle">Neue Tags anlegen, bestehende Tags löschen.</div>
+                </div>
+                <button class="icon-btn" type="button" data-action="close-modal" aria-label="Modal schließen"><i data-lucide="x"></i></button>
+              </div>
+              <form id="tags-form">
+                <div class="modal-body">
+                  ${modal.error ? `<div class="modal-error" role="alert">${escapeHtml(modal.error)}</div>` : ''}
+                  <div class="field">
+                    <label class="label" for="tag-name">Name</label>
+                    <input id="tag-name" name="name" maxlength="30" placeholder="z. B. Urlaub" value="${escapeHtml(modal.name)}" />
+                    <div class="field-hint">Maximal 30 Zeichen.</div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Farbe</div>
+                    <div class="color-grid">
+                      ${TAG_COLORS.map(color => `
+                        <button class="color-dot ${modal.color === color ? 'is-active' : ''}" type="button" data-action="pick-color" data-color="${color}" style="background:${color}" aria-label="Farbe ${color}"></button>
+                      `).join('')}
+                    </div>
+                  </div>
+                  <div class="field">
+                    <div class="label">Vorhandene Tags</div>
+                    <div class="tags-list">
+                      ${state.tags.length ? state.tags.map(tag => `
+                        <div class="tag-row">
+                          <div class="tag-row-main">
+                            <span class="tag-swatch" style="background:${tag.color}"></span>
+                            <div>
+                              <div class="tag-name">${escapeHtml(tag.name)}</div>
+                              <div class="tag-meta">${escapeHtml(tag.color)}</div>
+                            </div>
+                          </div>
+                          <button class="icon-btn icon-btn--danger" type="button" data-action="delete-tag" data-tag-id="${escapeHtml(String(tag.id))}" aria-label="Tag löschen"><i data-lucide="trash-2"></i></button>
+                        </div>
+                      `).join('') : '<div class="field-hint">Noch keine Tags vorhanden.</div>'}
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-foot">
+                  <div class="modal-actions">
+                    <button class="btn" type="button" data-action="close-modal">Schließen</button>
+                    <button class="btn btn-primary" type="submit">${modal.saving ? 'Speichern…' : 'Tag anlegen'}</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      bindModalEvents();
+      safeIcons();
+      const overlay = document.getElementById('modal-overlay');
+      overlay?.addEventListener('click', e => {
+        if (e.target === overlay) closeModal();
+      });
+      requestAnimationFrame(() => {
+        const focusEl = modal.type === 'entry' ? document.getElementById('entry-textarea') : document.getElementById('tag-name');
+        focusEl?.focus();
+      });
+    }
+
+    function bindModalEvents() {
+      refs.modalRoot.querySelectorAll('[data-action="close-modal"]').forEach(btn => {
+        btn.addEventListener('click', closeModal);
+      });
+
+      refs.modalRoot.querySelectorAll('[data-action="toggle-modal-tag"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tagId = String(btn.dataset.tagId);
+          if (state.modal.tags.has(String(tagId))) state.modal.tags.delete(String(tagId));
+          else state.modal.tags.add(String(tagId));
+          renderModal();
+        });
+      });
+
+      refs.modalRoot.querySelectorAll('[data-action="pick-color"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.modal.color = btn.dataset.color;
+          renderModal();
+        });
+      });
+
+      refs.modalRoot.querySelectorAll('[data-action="delete-tag"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const tagId = btn.dataset.tagId;
+          const tag = state.tags.find(item => String(item.id) === String(tagId));
+          if (tag) await deleteTag(tag);
+        });
+      });
+
+      document.getElementById('entry-form')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const textarea = document.getElementById('entry-textarea');
+        state.modal.text = textarea.value;
+        await saveEntryFromModal();
+      });
+
+      document.getElementById('tags-form')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const nameInput = document.getElementById('tag-name');
+        state.modal.name = nameInput.value;
+        await createTagFromModal();
+      });
+    }
+
+    async function saveEntryFromModal() {
+      const modal = state.modal;
+      const text = String(modal.text || '').trim();
+      if (!text) {
+        modal.error = 'Bitte Text eingeben.';
+        renderModal();
+        return;
+      }
+      modal.error = '';
+      modal.saving = true;
+      renderModal();
+      const payload = {
+        date: modal.date,
+        text,
+        tags: Array.from(modal.tags),
+        updated_at: new Date().toISOString()
+      };
+      try {
+        state.suppressRemoteUntil = Date.now() + 2500;
+        if (modal.isEdit && modal.id) {
+          const { error } = await db.from('entries').update(payload).eq('id', modal.id);
+          if (error) throw error;
+          showToast('Eintrag gespeichert');
+        } else {
+          payload.created_by = state.session?.user?.id || null;
+          const { error } = await db.from('entries').insert(payload);
+          if (error) throw error;
+          showToast('Eintrag angelegt');
+        }
+        closeModal();
+        await loadData(false);
+      } catch (err) {
+        state.modal = { ...modal, saving: false, error: err?.message || 'Speichern fehlgeschlagen.' };
+        renderModal();
+      }
+    }
+
+    async function deleteEntry(entry) {
+      const confirmed = window.confirm(`Eintrag vom ${formatDateLabel(entry.date)} löschen?`);
+      if (!confirmed) return;
+      try {
+        state.suppressRemoteUntil = Date.now() + 2500;
+        const { error } = await db.from('entries').delete().eq('id', entry.id);
+        if (error) throw error;
+        showToast('Eintrag gelöscht');
+        await loadData(false);
+      } catch (err) {
+        showToast(err?.message || 'Löschen fehlgeschlagen.', 'error');
+      }
+    }
+
+    async function createTagFromModal() {
+      const modal = state.modal;
+      const name = String(modal.name || '').trim();
+      if (!name) {
+        modal.error = 'Bitte einen Tag-Namen eingeben.';
+        renderModal();
+        return;
+      }
+      if (name.length > 30) {
+        modal.error = 'Der Tag-Name darf maximal 30 Zeichen haben.';
+        renderModal();
+        return;
+      }
+      modal.error = '';
+      modal.saving = true;
+      renderModal();
+      try {
+        state.suppressRemoteUntil = Date.now() + 2500;
+        const payload = {
+          name,
+          color: modal.color,
+          sort_order: state.tags.length
+        };
+        const { error } = await db.from('tags').insert(payload);
+        if (error) throw error;
+        showToast('Tag angelegt');
+        state.modal = { ...modal, name: '', saving: false };
+        await loadData(false);
+        openTagsModal();
+      } catch (err) {
+        state.modal = { ...modal, saving: false, error: err?.message || 'Tag konnte nicht angelegt werden.' };
+        renderModal();
+      }
+    }
+
+    async function deleteTag(tag) {
+      const confirmed = window.confirm(`Tag „${tag.name}“ löschen? Er wird aus allen Einträgen entfernt.`);
+      if (!confirmed) return;
+      try {
+        state.suppressRemoteUntil = Date.now() + 2500;
+        const affected = state.entries.filter(entry => (entry.tags || []).map(String).includes(String(tag.id)));
+        for (const entry of affected) {
+          const nextTags = (entry.tags || []).map(String).filter(id => String(id) !== String(tag.id));
+          const { error: updateError } = await db.from('entries').update({ tags: nextTags, updated_at: new Date().toISOString() }).eq('id', entry.id);
+          if (updateError) throw updateError;
+        }
+        const { error } = await db.from('tags').delete().eq('id', tag.id);
+        if (error) throw error;
+        state.activeFilters.delete(String(tag.id));
+        showToast('Tag gelöscht');
+        await loadData(false);
+        openTagsModal();
+      } catch (err) {
+        state.modal = { ...state.modal, error: err?.message || 'Tag konnte nicht gelöscht werden.' };
+        renderModal();
+      }
+    }
+
+    async function exportCsv() {
+      const rows = [...state.entries]
+        .sort((a, b) => parseDate(a.date) - parseDate(b.date) || new Date(a.created_at || 0) - new Date(b.created_at || 0))
+        .map(entry => ({
+          date: entry.date,
+          text: String(entry.text || '').replace(/\r?\n/g, ' '),
+          tags: (entry.tags || []).map(tagId => getTagById(tagId)?.name).filter(Boolean).join(', '),
+          created_at: formatCreatedAt(entry.created_at)
+        }));
+      const header = ['Datum', 'Text', 'Tags', 'Erstellt am'];
+      const csv = [header, ...rows.map(row => [row.date, row.text, row.tags, row.created_at])]
+        .map(cols => cols.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(';'))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kalender-export-${todayString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('CSV exportiert');
+    }
+
+    async function logout() {
+      try {
+        await db.auth.signOut();
+      } catch (err) {
+        showToast(err?.message || 'Abmelden fehlgeschlagen.', 'error');
+      }
+    }
+
+    async function loadData(showLoader = true) {
+      state.loading = showLoader;
+      renderMain(false, false);
+      const [entriesRes, tagsRes] = await Promise.all([
+        db.from('entries').select('*').order('date', { ascending: true }).order('created_at', { ascending: true }),
+        db.from('tags').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true })
+      ]);
+
+      if (entriesRes.error) throw entriesRes.error;
+      if (tagsRes.error) throw tagsRes.error;
+
+      state.entries = entriesRes.data || [];
+      state.tags = tagsRes.data || [];
+      state.loading = false;
+      renderFilterBar();
+      renderMain(false, false);
+    }
+
+    function subscribeRealtime() {
+      if (state.channel) return;
+      state.channel = db
+        .channel('app')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'entries' }, async () => {
+          if (Date.now() < state.suppressRemoteUntil) return;
+          try {
+            await loadData(false);
+            showToast('✓ Aktualisiert');
+          } catch (err) {
+            showToast(err?.message || 'Aktualisierung fehlgeschlagen.', 'error');
+          }
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, async () => {
+          if (Date.now() < state.suppressRemoteUntil) return;
+          try {
+            await loadData(false);
+            showToast('✓ Aktualisiert');
+          } catch (err) {
+            showToast(err?.message || 'Aktualisierung fehlgeschlagen.', 'error');
+          }
+        })
+        .subscribe();
+    }
+
+    function cleanupRealtime() {
+      if (!state.channel) return;
+      db.removeChannel(state.channel);
+      state.channel = null;
+    }
+
+    async function initApp() {
+      renderAppShell();
+      renderHeader();
+      renderFilterBar();
+      renderBottomBar();
+      renderMain(false, true);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && state.modal) closeModal();
+      }, { passive: true });
+      try {
+        await loadData(true);
+        subscribeRealtime();
+      } catch (err) {
+        showToast(err?.message || 'Daten konnten nicht geladen werden.', 'error');
+      }
+    }
+
+    async function boot() {
+      if (!HAS_SUPABASE_CONFIG) {
+        renderSetupScreen();
+        return;
+      }
+
+      let initialized = false;
+
+      db.auth.onAuthStateChange((_event, session) => {
+        state.session = session;
+        if (session && !initialized) {
+          initialized = true;
+          state.initialized = true;
+          initApp();
+        }
+        if (!session) {
+          initialized = false;
+          state.initialized = false;
+          cleanupRealtime();
+          closeModal();
+          renderLogin();
+        }
+      });
+
+      try {
+        const { data, error } = await db.auth.getSession();
+        if (error) throw error;
+        state.session = data.session;
+        if (data.session && !initialized) {
+          initialized = true;
+          state.initialized = true;
+          await initApp();
+        } else if (!data.session) {
+          renderLogin();
+        }
+      } catch (err) {
+        renderLogin(authErrorMessage(err?.message || 'Session konnte nicht geprüft werden.'));
+      }
+    }
+
+    window.addEventListener('error', (event) => {
+      const message = event?.error?.message || event?.message || 'Unbekannter Fehler';
+      if (refs.toastRoot) showToast(message, 'error');
+    });
+
+    boot();
+  </script>
+</body>
+</html>
