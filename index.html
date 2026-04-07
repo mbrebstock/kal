@@ -1348,6 +1348,7 @@
           <div id="filter-wrap" class="filter-wrap"></div>
           <main id="main-content" class="app-main" tabindex="-1"></main>
           <nav id="bottom-bar" class="bottom-bar" aria-label="Jahresnavigation"></nav>
+          <input id="csv-import-input" class="hidden" type="file" accept=".csv,text/csv" />
         </div>
       `;
       refs.header = document.getElementById('app-header');
@@ -1357,6 +1358,7 @@
       refs.main.addEventListener('scroll', () => {
         state.scrollPositions[state.view] = refs.main.scrollTop;
       }, { passive: true });
+      document.getElementById('csv-import-input')?.addEventListener('change', handleCsvImport);
       safeIcons();
     }
 
@@ -1366,9 +1368,8 @@
         <div class="header-left">
           <button class="brand" type="button" aria-label="Heute anzeigen" data-action="go-today-brand">${brandSVG()}</button>
           <div class="view-tabs" role="tablist" aria-label="Ansichten">
-            <button class="tab-btn ${state.view === 'calendar' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'calendar'}" data-view="calendar">Kalender</button>
-            <button class="tab-btn ${state.view === 'list' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'list'}" data-view="list">Liste</button>
-            <button class="tab-btn ${state.view === 'search' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'search'}" data-view="search">Suche</button>
+            <button class="tab-btn ${state.view === 'calendar' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'calendar'}" data-view="calendar">K</button>
+            <button class="tab-btn ${state.view === 'list' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'list'}" data-view="list">L</button>
           </div>
         </div>
         <div class="header-center">
@@ -1382,6 +1383,7 @@
         <div class="header-right">
           <button class="icon-btn ${state.view === 'search' ? 'is-active' : ''}" type="button" data-action="switch-search" aria-label="Suche öffnen"><i data-lucide="search"></i></button>
           <button class="icon-btn ${state.showFilters ? 'is-active' : ''}" type="button" data-action="toggle-filters" aria-label="Tag-Filter ein- oder ausblenden"><i data-lucide="tags"></i></button>
+          <button class="icon-btn" type="button" data-action="import-csv" aria-label="CSV importieren"><i data-lucide="upload"></i></button>
           <button class="icon-btn" type="button" data-action="export-csv" aria-label="CSV exportieren"><i data-lucide="download"></i></button>
           <button class="icon-btn" type="button" data-action="logout" aria-label="Abmelden"><i data-lucide="log-out"></i></button>
         </div>
@@ -1397,6 +1399,9 @@
         state.showFilters = !state.showFilters;
         renderHeader();
         renderFilterBar();
+      });
+      refs.header.querySelector('[data-action="import-csv"]')?.addEventListener('click', () => {
+        document.getElementById('csv-import-input')?.click();
       });
       refs.header.querySelector('[data-action="export-csv"]')?.addEventListener('click', exportCsv);
       refs.header.querySelector('[data-action="logout"]')?.addEventListener('click', logout);
@@ -1454,12 +1459,14 @@
     }
 
     function renderBottomBar() {
-      const currentYear = new Date().getFullYear();
-      const years = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+      const selected = Number(state.selectedYear);
+      const years = Array.from({ length: 6 }, (_, index) => selected - 1 + index);
       refs.bottom.innerHTML = `
+        <button class="icon-btn" type="button" data-action="prev-year" aria-label="Vorheriges Jahr"><i data-lucide="chevron-left"></i></button>
         <div class="year-strip">
           ${years.map(year => `<button class="year-btn ${state.selectedYear === year ? 'is-active' : ''}" type="button" data-year="${year}">${year}</button>`).join('')}
         </div>
+        <button class="icon-btn" type="button" data-action="next-year" aria-label="Nächstes Jahr"><i data-lucide="chevron-right"></i></button>
         <button class="today-btn btn" type="button" data-action="today"><i data-lucide="arrow-up"></i>&nbsp;Heute</button>
       `;
       refs.bottom.querySelectorAll('[data-year]').forEach(btn => {
@@ -1469,6 +1476,18 @@
           renderBottomBar();
           renderMain(false, true);
         });
+      });
+      refs.bottom.querySelector('[data-action="prev-year"]')?.addEventListener('click', () => {
+        state.selectedYear -= 1;
+        state.pendingScrollDate = null;
+        renderBottomBar();
+        renderMain(false, true);
+      });
+      refs.bottom.querySelector('[data-action="next-year"]')?.addEventListener('click', () => {
+        state.selectedYear += 1;
+        state.pendingScrollDate = null;
+        renderBottomBar();
+        renderMain(false, true);
       });
       refs.bottom.querySelector('[data-action="today"]')?.addEventListener('click', goToToday);
       safeIcons();
@@ -1982,6 +2001,171 @@
       } catch (err) {
         state.modal = { ...state.modal, error: err?.message || 'Tag konnte nicht gelöscht werden.' };
         renderModal();
+      }
+    }
+
+    function parseCsvText(csvText) {
+      const text = String(csvText || '').replace(/^﻿/, '');
+      const rows = [];
+      let row = [];
+      let cell = '';
+      let inQuotes = false;
+
+      for (let index = 0; index < text.length; index += 1) {
+        const char = text[index];
+        const next = text[index + 1];
+
+        if (char === '"') {
+          if (inQuotes && next === '"') {
+            cell += '"';
+            index += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+
+        if (char === ';' && !inQuotes) {
+          row.push(cell);
+          cell = '';
+          continue;
+        }
+
+        if ((char === '
+' || char === '
+') && !inQuotes) {
+          if (char === '
+' && next === '
+') index += 1;
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+          continue;
+        }
+
+        cell += char;
+      }
+
+      if (cell.length || row.length) {
+        row.push(cell);
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function normalizeImportDate(value) {
+      const input = String(value || '').trim();
+      if (!input) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+      const deMatch = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+      if (deMatch) {
+        const [, d, m, y] = deMatch;
+        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      }
+      const parsed = new Date(input);
+      if (!Number.isNaN(parsed.getTime())) {
+        return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
+      }
+      return '';
+    }
+
+    function normalizeImportCreatedAt(value) {
+      const input = String(value || '').trim();
+      if (!input) return new Date().toISOString();
+      const deMatch = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:,\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+      if (deMatch) {
+        const [, d, m, y, hh = '0', mm = '0', ss = '0'] = deMatch;
+        const dt = new Date(Number(y), Number(m) - 1, Number(d), Number(hh), Number(mm), Number(ss));
+        if (!Number.isNaN(dt.getTime())) return dt.toISOString();
+      }
+      const parsed = new Date(input);
+      return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+    }
+
+    function splitImportedTags(value) {
+      return String(value || '')
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    async function handleCsvImport(event) {
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+      try {
+        const csvText = await file.text();
+        const rows = parseCsvText(csvText).filter(row => row.some(cell => String(cell || '').trim() !== ''));
+        if (rows.length < 2) throw new Error('Die CSV-Datei ist leer.');
+
+        const headers = rows[0].map(cell => String(cell || '').trim().toLowerCase());
+        const dateIndex = headers.findIndex(header => ['datum', 'date'].includes(header));
+        const textIndex = headers.findIndex(header => ['text', 'eintrag', 'notiz'].includes(header));
+        const tagsIndex = headers.findIndex(header => ['tags', 'tag'].includes(header));
+        const createdAtIndex = headers.findIndex(header => ['erstellt am', 'created at', 'created_at'].includes(header));
+
+        if (dateIndex === -1 || textIndex === -1) {
+          throw new Error('CSV-Header nicht erkannt. Erwartet werden mindestens Datum und Text.');
+        }
+
+        const imported = rows.slice(1).map(row => {
+          const date = normalizeImportDate(row[dateIndex]);
+          const textValue = String(row[textIndex] || '').trim();
+          const tagNames = tagsIndex === -1 ? [] : splitImportedTags(row[tagsIndex]);
+          const createdAt = createdAtIndex === -1 ? new Date().toISOString() : normalizeImportCreatedAt(row[createdAtIndex]);
+          return { date, text: textValue, tagNames, createdAt };
+        }).filter(item => item.date && item.text);
+
+        if (!imported.length) throw new Error('Keine gültigen Zeilen zum Import gefunden.');
+
+        const existingTags = new Map(state.tags.map(tag => [String(tag.name || '').trim().toLowerCase(), tag]));
+        const missingTagNames = [];
+        imported.forEach(item => {
+          item.tagNames.forEach(name => {
+            const key = name.toLowerCase();
+            if (!existingTags.has(key) && !missingTagNames.some(value => value.toLowerCase() === key)) {
+              missingTagNames.push(name);
+            }
+          });
+        });
+
+        state.suppressRemoteUntil = Date.now() + 3000;
+
+        if (missingTagNames.length) {
+          const newTagsPayload = missingTagNames.map((name, index) => ({
+            name,
+            color: TAG_COLORS[(state.tags.length + index) % TAG_COLORS.length],
+            sort_order: state.tags.length + index
+          }));
+          const { error: tagError } = await db.from('tags').insert(newTagsPayload);
+          if (tagError) throw tagError;
+          await loadData(false);
+        }
+
+        const refreshedTags = new Map(state.tags.map(tag => [String(tag.name || '').trim().toLowerCase(), tag]));
+        const payload = imported.map(item => ({
+          date: item.date,
+          text: item.text,
+          tags: item.tagNames.map(name => refreshedTags.get(name.toLowerCase())?.id).filter(Boolean),
+          created_by: state.session?.user?.id || null,
+          created_at: item.createdAt,
+          updated_at: item.createdAt
+        }));
+
+        const chunkSize = 200;
+        for (let index = 0; index < payload.length; index += chunkSize) {
+          const chunk = payload.slice(index, index + chunkSize);
+          const { error } = await db.from('entries').insert(chunk);
+          if (error) throw error;
+        }
+
+        await loadData(false);
+        showToast(`${payload.length} Einträge importiert`);
+      } catch (err) {
+        showToast(err?.message || 'CSV-Import fehlgeschlagen.', 'error');
+      } finally {
+        if (event?.target) event.target.value = '';
       }
     }
 
