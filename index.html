@@ -2005,7 +2005,7 @@
     }
 
     function parseCsvText(csvText) {
-      const text = String(csvText || '').replace(/^﻿/, '');
+      const text = String(csvText || '').replace(/^\ufeff/, '');
       const rows = [];
       let row = [];
       let cell = '';
@@ -2031,12 +2031,8 @@
           continue;
         }
 
-        if ((char === '
-' || char === '
-') && !inQuotes) {
-          if (char === '
-' && next === '
-') index += 1;
+        if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && next === '\n') index += 1;
           row.push(cell);
           rows.push(row);
           row = [];
