@@ -30,7 +30,7 @@
       --radius-full:  999px;
       --header-h:     52px;
       --bottom-h:     52px;
-      --date-col:     82px;
+      --date-col:     72px;
       --space-1: 4px;
       --space-2: 8px;
       --space-3: 12px;
@@ -383,14 +383,14 @@
       position: sticky;
       top: 0;
       z-index: 5;
-      padding: 8px 12px;
+      padding: 5px 10px;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       background: linear-gradient(180deg, rgba(15, 17, 23, 0.98), rgba(15, 17, 23, 0.92));
       color: var(--text-muted);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
     }
 
@@ -400,7 +400,7 @@
       min-width: 0;
       border-bottom: 1px solid rgba(45, 49, 72, 0.9);
       content-visibility: auto;
-      contain-intrinsic-size: 56px;
+      contain-intrinsic-size: 34px;
       background: transparent;
     }
 
@@ -412,14 +412,14 @@
     .day-date {
       width: var(--date-col);
       min-width: var(--date-col);
-      padding: 4px 6px 4px 10px;
+      padding: 1px 4px 1px 8px;
       border-right: 1px solid rgba(45, 49, 72, 0.85);
       color: var(--text-muted);
       font-size: 12px;
       line-height: 1.1;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -452,29 +452,30 @@
     .day-body {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 4px;
-      align-items: start;
+      gap: 2px;
+      align-items: center;
       min-width: 0;
-      padding: 2px 6px;
+      padding: 0 4px;
     }
 
     .day-entries {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 0;
       min-width: 0;
     }
 
     .empty-day {
-      min-height: 28px;
-      padding: 5px 8px;
-      border: 1px dashed rgba(71, 85, 105, 0.4);
-      border-radius: var(--radius-md);
+      min-height: 20px;
+      padding: 1px 4px;
+      border: 0;
+      border-radius: 0;
       color: var(--text-faint);
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      background: rgba(26, 29, 46, 0.35);
+      background: transparent;
+      opacity: 0.82;
     }
 
     .entry-item {
@@ -490,8 +491,8 @@
 
     .entry-main {
       min-width: 0;
-      min-height: 28px;
-      padding: 3px 4px;
+      min-height: 20px;
+      padding: 1px 3px;
       display: flex;
       text-align: left;
       border: 0;
@@ -518,7 +519,7 @@
 
     .calendar-wrap .entry-main {
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       width: 100%;
     }
 
@@ -526,15 +527,20 @@
       flex: 0 1 auto;
       flex-wrap: nowrap;
       overflow: hidden;
-      max-width: 48%;
+      max-width: 32%;
+      gap: 2px;
     }
 
     .calendar-wrap .tag-chip {
       flex: 0 0 auto;
-      min-height: 16px;
-      padding: 0 4px;
+      min-height: 14px;
+      padding: 0 3px;
       font-size: 12px;
-      line-height: 1.1;
+      line-height: 1;
+    }
+
+    .calendar-wrap .entry-meta .tag-chip:nth-child(n + 2) {
+      display: none;
     }
 
     .calendar-wrap .entry-text {
@@ -545,12 +551,12 @@
       overflow: hidden;
       text-overflow: ellipsis;
       -webkit-line-clamp: unset;
-      line-height: 1.2;
+      line-height: 1.05;
     }
 
     .calendar-wrap .entry-item + .entry-item {
-      border-top: 1px dotted rgba(71, 85, 105, 0.32);
-      padding-top: 1px;
+      border-top: 1px dotted rgba(71, 85, 105, 0.22);
+      padding-top: 0;
     }
 
     .tag-chip {
@@ -588,14 +594,23 @@
 
     .calendar-wrap .add-entry-btn,
     .calendar-wrap .entry-delete {
-      min-height: 36px;
-      min-width: 36px;
-      border-radius: 10px;
+      min-height: 28px;
+      min-width: 28px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      padding: 0;
+    }
+
+    .calendar-wrap .add-entry-btn svg,
+    .calendar-wrap .entry-delete svg {
+      width: 14px;
+      height: 14px;
     }
 
     .calendar-wrap .empty-day {
       font-size: 12px;
-      line-height: 1.2;
+      line-height: 1;
     }
     .list-wrap, .search-results { display: flex; flex-direction: column; }
 
