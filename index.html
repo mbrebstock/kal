@@ -2006,6 +2006,15 @@
 
     function parseCsvText(csvText) {
       const text = String(csvText || '').replace(/^\ufeff/, '');
+      const rawLines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(line => line.trim()).slice(0, 5);
+      const delimiterCandidates = [';', ',', '\t'];
+      const delimiter = delimiterCandidates
+        .map(candidate => ({
+          candidate,
+          score: rawLines.reduce((sum, line) => sum + line.split(candidate).length, 0)
+        }))
+        .sort((a, b) => b.score - a.score)[0]?.candidate || ';';
+
       const rows = [];
       let row = [];
       let cell = '';
@@ -2025,7 +2034,7 @@
           continue;
         }
 
-        if (char === ';' && !inQuotes) {
+        if (char === delimiter && !inQuotes) {
           row.push(cell);
           cell = '';
           continue;
@@ -2048,7 +2057,7 @@
         rows.push(row);
       }
 
-      return rows;
+      return rows.map(cols => cols.map(value => String(value || '').trim()));
     }
 
     function normalizeImportDate(value) {
@@ -2095,14 +2104,14 @@
         const rows = parseCsvText(csvText).filter(row => row.some(cell => String(cell || '').trim() !== ''));
         if (rows.length < 2) throw new Error('Die CSV-Datei ist leer.');
 
-        const headers = rows[0].map(cell => String(cell || '').trim().toLowerCase());
+        const headers = rows[0].map(cell => String(cell || '').trim().toLowerCase().replace(/\s+/g, ' '));
         const dateIndex = headers.findIndex(header => ['datum', 'date'].includes(header));
         const textIndex = headers.findIndex(header => ['text', 'eintrag', 'notiz'].includes(header));
         const tagsIndex = headers.findIndex(header => ['tags', 'tag'].includes(header));
         const createdAtIndex = headers.findIndex(header => ['erstellt am', 'created at', 'created_at'].includes(header));
 
         if (dateIndex === -1 || textIndex === -1) {
-          throw new Error('CSV-Header nicht erkannt. Erwartet werden mindestens Datum und Text.');
+          throw new Error(`CSV-Header nicht erkannt. Gefunden: ${headers.join(', ')}. Erwartet werden mindestens Datum und Text.`);
         }
 
         const imported = rows.slice(1).map(row => {
