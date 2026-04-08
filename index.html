@@ -1,2315 +1,1440 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <title>Kalender</title>
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>babyphone-v2</title>
+  <meta name="description" content="Android-Babyphone-Web-App mit PeerJS, WebRTC, Auto-Recovery, Lautstärkeanzeige, Ampel und klarer Baby-/Elternansicht." />
+  <meta name="theme-color" content="#171614" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <style>
-    :root {
-      --bg:           #0f1117;
-      --surface:      #1a1d2e;
-      --surface-2:    #1e2235;
-      --border:       #2d3148;
-      --text:         #e2e8f0;
-      --text-muted:   #94a3b8;
-      --text-faint:   #475569;
-      --accent:       #6366f1;
-      --accent-hover: #4f46e5;
-      --danger:       #ef4444;
-      --success:      #22c55e;
-      --overlay:      rgba(3, 6, 18, 0.78);
-      --shadow:       0 18px 50px rgba(0, 0, 0, 0.38);
-      --radius-sm:    8px;
-      --radius-md:    12px;
-      --radius-lg:    16px;
-      --radius-xl:    20px;
-      --radius-full:  999px;
-      --header-h:     52px;
-      --bottom-h:     52px;
-      --date-col:     72px;
-      --space-1: 4px;
-      --space-2: 8px;
-      --space-3: 12px;
-      --space-4: 16px;
-      --space-5: 20px;
-      --space-6: 24px;
-      --space-8: 32px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; }
-
-    html, body {
-      height: 100dvh;
-      overflow: hidden;
-      margin: 0;
-      background: var(--bg);
-    }
-
-    html {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: optimizeLegibility;
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Satoshi', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.45;
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 26%),
-        var(--bg);
-    }
-
-    img, svg { display: block; max-width: 100%; }
-    button, input, textarea, select { font: inherit; color: inherit; }
-    button { cursor: pointer; }
-    a { color: inherit; text-decoration: none; }
-
-    input, textarea, select {
-      font-size: 16px;
-      min-height: 44px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      outline: none;
-      width: 100%;
-    }
-
-    textarea { min-height: 96px; resize: vertical; }
-    input::placeholder, textarea::placeholder { color: var(--text-faint); }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.16);
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .hidden { display: none !important; }
-
-    .skip-link {
-      position: absolute;
-      left: 12px;
-      top: -60px;
-      z-index: 1000;
-      background: var(--accent);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: var(--radius-md);
-      transition: top 0.2s ease;
-    }
-
-    .skip-link:focus { top: 12px; }
-
-    #root, #modal-root, #toast-root {
-      position: relative;
-      z-index: 1;
-    }
-
-    .app-shell {
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-      overflow: hidden;
-    }
-
-    .app-header {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      height: var(--header-h);
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
-      gap: var(--space-2);
-      padding: 0 10px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(15, 17, 23, 0.96);
-      backdrop-filter: blur(12px);
-    }
-
-    .header-left, .header-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .header-center {
-      min-width: 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .brand {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(180deg, var(--surface-2), var(--surface));
-      color: var(--text);
-      padding: 0;
-    }
-
-    .brand svg { width: 20px; height: 20px; }
-
-    .view-tabs {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      min-width: 0;
-      padding: 4px;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: var(--surface);
-    }
-
-    .tab-btn,
-    .year-btn,
-    .filter-btn,
-    .icon-btn,
-    .btn,
-    .tag-pill,
-    .color-dot {
-      min-width: 44px;
-      min-height: 44px;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      background: transparent;
-      color: var(--text-muted);
-      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease, opacity 0.16s ease;
-    }
-
-    .tab-btn {
-      padding: 0 10px;
-      font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .tab-btn.is-active,
-    .year-btn.is-active {
-      color: #ffffff;
-      background: linear-gradient(180deg, rgba(99, 102, 241, 0.42), rgba(79, 70, 229, 0.24));
-      border-color: rgba(165, 180, 252, 0.8);
-      box-shadow: 0 0 0 1px rgba(165, 180, 252, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    }
-
-    .filter-btn.is-active,
-    .tag-pill.is-active {
-      color: #ffffff !important;
-      border-color: rgba(255, 255, 255, 0.34) !important;
-      box-shadow: 0 0 0 2px rgba(165, 180, 252, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      transform: translateY(-1px);
-      filter: saturate(1.18) brightness(1.12);
-    }
-
-    .tab-btn:active,
-    .year-btn:active,
-    .filter-btn:active,
-    .icon-btn:active,
-    .btn:active,
-    .tag-pill:active,
-    .color-dot:active { transform: scale(0.98); }
-
-    .icon-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-color: var(--border);
-      background: var(--surface);
-      padding: 0;
-      flex: 0 0 auto;
-    }
-
-    .icon-btn.is-active {
-      color: #ffffff;
-      border-color: rgba(165, 180, 252, 0.82);
-      background: linear-gradient(180deg, rgba(99, 102, 241, 0.4), rgba(79, 70, 229, 0.2));
-      box-shadow: 0 0 0 1px rgba(165, 180, 252, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    }
-
-    .icon-btn--danger {
-      color: #fca5a5;
-      border-color: rgba(239, 68, 68, 0.22);
-      background: rgba(239, 68, 68, 0.12);
-    }
-
-    .icon-btn svg, .entry-delete svg { width: 18px; height: 18px; }
-
-    .header-search {
-      width: min(100%, 440px);
-      position: relative;
-    }
-
-    .header-search input {
-      padding-left: 40px;
-      background: var(--surface);
-    }
-
-    .header-search svg {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      color: var(--text-faint);
-      pointer-events: none;
-    }
-
-    .filter-wrap {
-      border-bottom: 1px solid var(--border);
-      background: rgba(26, 29, 46, 0.96);
-      overflow: hidden;
-      transition: max-height 0.18s ease, opacity 0.18s ease;
-    }
-
-    .filter-wrap.is-open { max-height: 120px; opacity: 1; }
-    .filter-wrap.is-closed { max-height: 0; opacity: 0; border-bottom-color: transparent; }
-
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: thin;
-    }
-
-    .filter-label {
-      flex: 0 0 auto;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 700;
-    }
-
-    .filter-btn {
-      flex: 0 0 auto;
-      padding: 0 12px;
-      border-color: var(--border);
-      background: var(--surface);
-      font-size: 13px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .manage-tags-btn { margin-left: auto; flex: 0 0 auto; }
-
-    .app-main {
-      flex: 1;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      overflow-x: hidden;
-      min-height: 0;
-      background: linear-gradient(180deg, rgba(30, 34, 53, 0.42), transparent 260px);
-    }
-
-    .bottom-bar {
-      position: sticky;
-      bottom: 0;
-      z-index: 30;
-      height: var(--bottom-h);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 10px;
-      border-top: 1px solid var(--border);
-      background: rgba(15, 17, 23, 0.96);
-      backdrop-filter: blur(12px);
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-
-    .year-strip {
-      display: flex;
-      gap: 6px;
-      min-width: 0;
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
-    }
-
-    .year-strip::-webkit-scrollbar,
-    .filter-bar::-webkit-scrollbar,
-    .bottom-bar::-webkit-scrollbar { display: none; }
-
-    .year-btn, .today-btn {
-      flex: 0 0 auto;
-      padding: 0 12px;
-      border-color: var(--border);
-      background: var(--surface);
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .today-btn { margin-left: auto; }
-    .today-btn svg { width: 16px; height: 16px; }
-
-    .panel-empty,
-    .panel-loading,
-    .search-help {
-      padding: 20px 14px 24px;
-      color: var(--text-muted);
-    }
-
-    .panel-empty strong,
-    .search-help strong { color: var(--text); }
-
-    .calendar-wrap, .list-wrap, .search-wrap { min-height: 100%; }
-    .calendar-grid { width: 100%; }
-
-    .month-row {
-      position: sticky;
-      top: 0;
-      z-index: 5;
-      padding: 5px 10px;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(15, 17, 23, 0.98), rgba(15, 17, 23, 0.92));
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-    }
-
-    .day-row {
-      display: grid;
-      grid-template-columns: var(--date-col) minmax(0, 1fr);
-      min-width: 0;
-      border-bottom: 1px solid rgba(45, 49, 72, 0.9);
-      content-visibility: auto;
-      contain-intrinsic-size: 34px;
-      background: transparent;
-    }
-
-    .day-row.is-today {
-      box-shadow: inset 3px 0 0 var(--accent);
-      background: rgba(99, 102, 241, 0.05);
-    }
-
-    .day-date {
-      width: var(--date-col);
-      min-width: var(--date-col);
-      padding: 1px 4px 1px 8px;
-      border-right: 1px solid rgba(45, 49, 72, 0.85);
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 1.1;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .day-date .weekday {
-      display: inline;
-      margin-bottom: 0;
-      font-weight: 700;
-      font-size: 12px;
-      flex: 0 0 auto;
-    }
-
-    .day-date .full-date {
-      display: inline;
-      font-size: 12px;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .day-row.is-today .day-date,
-    .day-row.is-today .day-date .weekday,
-    .day-row.is-today .day-date .full-date {
-      color: #c7d2fe;
-      font-weight: 700;
-    }
-
-    .day-date.is-weekend { color: #6e8198; }
-
-    .day-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 2px;
-      align-items: center;
-      min-width: 0;
-      padding: 0 4px;
-    }
-
-    .day-entries {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      min-width: 0;
-    }
-
-    .empty-day {
-      min-height: 20px;
-      padding: 1px 4px;
-      border: 0;
-      border-radius: 0;
-      color: var(--text-faint);
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      background: transparent;
-      opacity: 0.82;
-    }
-
-    .entry-item {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 2px;
-      align-items: center;
-      min-width: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-    }
-
-    .entry-main {
-      min-width: 0;
-      min-height: 20px;
-      padding: 1px 3px;
-      display: flex;
-      text-align: left;
-      border: 0;
-      background: transparent;
-      color: var(--text);
-    }
-
-    .entry-text {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-      word-break: break-word;
-      white-space: pre-wrap;
-    }
-
-    .entry-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      margin-top: 0;
-      min-width: 0;
-    }
-
-    .calendar-wrap .entry-main {
-      align-items: center;
-      gap: 4px;
-      width: 100%;
-    }
-
-    .calendar-wrap .entry-meta {
-      flex: 0 1 auto;
-      flex-wrap: nowrap;
-      overflow: hidden;
-      max-width: 32%;
-      gap: 2px;
-    }
-
-    .calendar-wrap .tag-chip {
-      flex: 0 0 auto;
-      min-height: 14px;
-      padding: 0 3px;
-      font-size: 12px;
-      line-height: 1;
-    }
-
-    .calendar-wrap .entry-meta .tag-chip:nth-child(n + 2) {
-      display: none;
-    }
-
-    .calendar-wrap .entry-text {
-      flex: 1 1 auto;
-      min-width: 0;
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      -webkit-line-clamp: unset;
-      line-height: 1.05;
-    }
-
-    .calendar-wrap .entry-item + .entry-item {
-      border-top: 1px dotted rgba(71, 85, 105, 0.22);
-      padding-top: 0;
-    }
-
-    .tag-chip {
-      display: inline-flex;
-      align-items: center;
-      max-width: 100%;
-      min-height: 16px;
-      padding: 0 5px;
-      border-radius: var(--radius-full);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .entry-delete {
-      width: 44px;
-      height: 44px;
-      min-width: 44px;
-      border-radius: 12px;
-      border: 0;
-      background: transparent;
-      color: #fda4af;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      margin: 0;
-    }
-
-    .add-entry-btn { align-self: flex-start; }
-
-    .calendar-wrap .add-entry-btn,
-    .calendar-wrap .entry-delete {
-      min-height: 28px;
-      min-width: 28px;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      padding: 0;
-    }
-
-    .calendar-wrap .add-entry-btn svg,
-    .calendar-wrap .entry-delete svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    .calendar-wrap .empty-day {
-      font-size: 12px;
-      line-height: 1;
-    }
-    .list-wrap, .search-results { display: flex; flex-direction: column; }
-
-    .list-row, .search-row {
-      display: grid;
-      grid-template-columns: 82px minmax(0, 1fr);
-      border-bottom: 1px solid rgba(45, 49, 72, 0.9);
-      content-visibility: auto;
-      contain-intrinsic-size: 88px;
-      min-width: 0;
-    }
-
-    .list-date, .search-date {
-      padding: 12px 8px 12px 12px;
-      border-right: 1px solid rgba(45, 49, 72, 0.85);
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 1.2;
-    }
-
-    .list-date strong, .search-date strong {
-      display: block;
-      color: var(--text);
-      font-size: 12px;
-      margin-bottom: 4px;
-    }
-
-    .list-main, .search-main {
-      min-width: 0;
-      padding: 10px 12px;
-      display: block;
-      text-align: left;
-      background: transparent;
-      border: 0;
-      color: inherit;
-    }
-
-    .list-main:hover, .search-main:hover, .entry-main:hover {
-      background: rgba(99, 102, 241, 0.04);
-      border-radius: 12px;
-    }
-
-    .list-sub {
-      margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .list-created {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--text-faint);
-    }
-
-    .search-main mark {
-      background: rgba(99, 102, 241, 0.28);
-      color: var(--text);
-      border-radius: 4px;
-      padding: 0 2px;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--overlay);
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 100;
-      padding: 12px;
-    }
-
-    .modal-card {
-      width: min(680px, 100%);
-      max-height: min(84dvh, 760px);
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: linear-gradient(180deg, rgba(30, 34, 53, 1), rgba(26, 29, 46, 1));
-      box-shadow: var(--shadow);
-    }
-
-    .modal-head, .modal-foot {
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(45, 49, 72, 0.95);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .modal-foot {
-      border-top: 1px solid rgba(45, 49, 72, 0.95);
-      border-bottom: 0;
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .modal-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .modal-body {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .label {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-
-    .field-hint {
-      font-size: 12px;
-      color: var(--text-faint);
-    }
-
-    .modal-error, .auth-error, .setup-note {
-      border: 1px solid rgba(239, 68, 68, 0.24);
-      background: rgba(239, 68, 68, 0.12);
-      color: #fecaca;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-    }
-
-    .setup-note {
-      border-color: rgba(99, 102, 241, 0.24);
-      background: rgba(99, 102, 241, 0.12);
-      color: #c7d2fe;
-      text-align: left;
-    }
-
-    .tag-picker {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag-pill {
-      padding: 0 12px;
-      border-color: var(--border);
-      background: var(--surface);
-      color: var(--text-muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 0 14px;
-      border-color: var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-hover);
-      border-color: var(--accent-hover);
-    }
-
-    .btn:hover:not(.btn-primary) { background: var(--surface-2); }
-
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.14);
-      border-color: rgba(239, 68, 68, 0.24);
-      color: #fecaca;
-    }
-
-    .color-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .color-dot {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
-      min-height: 36px;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      padding: 0;
-      position: relative;
-    }
-
-    .color-dot.is-active {
-      border-color: white;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-    }
-
-    .tags-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .tag-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      padding: 10px 12px;
-      border: 1px solid rgba(45, 49, 72, 0.95);
-      border-radius: 14px;
-      background: rgba(26, 29, 46, 0.68);
-    }
-
-    .tag-row-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .tag-swatch {
-      width: 14px;
-      height: 14px;
-      min-width: 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-    }
-
-    .tag-name {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-weight: 700;
-    }
-
-    .tag-meta {
-      font-size: 12px;
-      color: var(--text-faint);
-    }
-
-    .login-shell {
-      min-height: 100dvh;
-      display: grid;
-      place-items: center;
-      padding: 20px;
-    }
-
-    .login-card {
-      width: min(420px, 100%);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 20px;
-      background: linear-gradient(180deg, rgba(30, 34, 53, 0.96), rgba(26, 29, 46, 0.96));
-      box-shadow: var(--shadow);
-    }
-
-    .login-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .logo-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(180deg, rgba(99, 102, 241, 0.22), rgba(99, 102, 241, 0.08));
-      border: 1px solid rgba(99, 102, 241, 0.22);
-      color: white;
-      flex: 0 0 auto;
-    }
-
-    .logo-mark svg { width: 22px; height: 22px; }
-
-    .login-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .login-copy {
-      color: var(--text-muted);
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .login-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .helper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      min-height: 20px;
-    }
-
-    .helper-text {
-      font-size: 12px;
-      color: var(--text-faint);
-    }
-
-    #toast-root {
-      position: fixed;
-      top: 64px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 120;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-      width: min(92vw, 420px);
-    }
-
-    .toast {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(34, 197, 94, 0.25);
-      background: rgba(13, 19, 27, 0.95);
-      color: var(--text);
-      padding: 12px 14px;
-      box-shadow: var(--shadow);
-    }
-
-    .toast--error { border-color: rgba(239, 68, 68, 0.24); }
-    .toast-icon { width: 18px; height: 18px; color: var(--success); flex: 0 0 auto; }
-    .toast--error .toast-icon { color: var(--danger); }
-
-    .skeleton-list {
-      padding: 10px 12px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .skeleton-card {
-      height: 78px;
-      border-radius: 16px;
-      background:
-        linear-gradient(90deg,
-          rgba(45, 49, 72, 0.8) 20%,
-          rgba(71, 85, 105, 0.42) 50%,
-          rgba(45, 49, 72, 0.8) 80%);
-      background-size: 220% 100%;
-      animation: shimmer 1.4s linear infinite;
-    }
-
-    @keyframes shimmer {
-      from { background-position: 220% 0; }
-      to { background-position: -220% 0; }
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .entry-delete { opacity: 0; }
-      .entry-item:hover .entry-delete,
-      .entry-delete:focus-visible { opacity: 1; }
-    }
-
-    @media (min-width: 768px) {
-      .modal-overlay {
-        align-items: center;
-        padding: 24px;
-      }
-      .modal-card { border-radius: 24px; }
-    }
-
-    @media (max-width: 520px) {
-      .app-header {
-        grid-template-columns: minmax(0, 1fr) auto;
-      }
-
-      .header-center {
-        grid-column: 1 / -1;
-        order: 3;
-        padding-bottom: 8px;
-      }
-
-      .app-header.has-search {
-        height: auto;
-        min-height: var(--header-h);
-        padding-top: 6px;
-      }
-
-      .brand { display: none; }
-
-      .view-tabs {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .tab-btn {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 0 8px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem;
+      --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9; --color-surface-offset: #f3f0ec;
+      --color-border: #d4d1ca; --color-divider: #dcd9d5; --color-text: #28251d; --color-text-muted: #5e5c58;
+      --color-text-faint: #8f8c87; --color-text-inverse: #f9f8f4; --color-primary: #01696f; --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #cedcd8; --color-success: #437a22; --color-success-bright: #5aa51e; --color-warning: #8f7c18; --color-error: #a13544;
+      --radius-sm: 0.5rem; --radius-md: 0.75rem; --radius-lg: 1rem; --radius-xl: 1.25rem; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(40,37,29,.06); --shadow-md: 0 4px 12px rgba(40,37,29,.08); --shadow-lg: 0 12px 32px rgba(40,37,29,.12);
+      --transition: 180ms cubic-bezier(.16,1,.3,1);
+      --font-body: 'Satoshi', 'Inter', sans-serif;
+      --font-display: 'Satoshi', 'Inter', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d; --color-surface-offset: #252321;
+      --color-border: #393836; --color-divider: #2a2927; --color-text: #ece7df; --color-text-muted: #c0b9af;
+      --color-text-faint: #847f76; --color-text-inverse: #11110f; --color-primary: #4f98a3; --color-primary-hover: #227f8b;
+      --color-primary-highlight: #313b3b; --color-success: #6daa45; --color-success-bright: #7dff4f; --color-warning: #c7d84d; --color-error: #dd6974;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.2); --shadow-md: 0 4px 12px rgba(0,0,0,.3); --shadow-lg: 0 12px 32px rgba(0,0,0,.45);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:none;text-size-adjust:none;scroll-behavior:smooth}
+    body{min-height:100dvh;background:radial-gradient(circle at top right,color-mix(in oklab,var(--color-primary) 10%, transparent),transparent 28%),var(--color-bg);color:var(--color-text);font:400 var(--text-base)/1.6 var(--font-body)}
+    img,svg,video,canvas{display:block;max-width:100%;height:auto}
+    button,input{font:inherit;color:inherit}
+    button{cursor:pointer;border:none;background:none}
+    a,button,input{transition:background var(--transition),color var(--transition),border-color var(--transition),box-shadow var(--transition),transform var(--transition),opacity var(--transition)}
+    :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+    @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+    .hidden{display:none!important}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .skip-link{position:absolute;left:var(--space-4);top:-50px;background:var(--color-primary);color:var(--color-text-inverse);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);z-index:100}
+    .skip-link:focus{top:var(--space-4)}
+
+    .app-shell{max-width:1120px;margin:0 auto;padding:var(--space-4)}
+    .header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) 0 var(--space-6)}
+    .brand{display:flex;align-items:flex-start;gap:var(--space-3)}
+    .brand-mark{width:44px;height:44px;color:var(--color-primary);flex:0 0 auto}
+    .brand-copy h1{font:700 var(--text-xl)/1.08 var(--font-display);letter-spacing:-.03em}
+    .brand-copy p{font-size:var(--text-sm);color:var(--color-text-muted);max-width:54ch}
+    .header-actions{display:flex;align-items:center;gap:var(--space-2)}
+    .icon-button{min-width:44px;min-height:44px;display:grid;place-items:center;border:1px solid color-mix(in oklab,var(--color-text) 12%, transparent);background:var(--color-surface);border-radius:var(--radius-full);box-shadow:var(--shadow-sm)}
+    .icon-button:hover{background:var(--color-surface-2)}
+
+    .notice{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-4);background:linear-gradient(180deg,var(--color-surface),var(--color-surface-offset));border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:var(--space-6)}
+    .notice strong{font-weight:700}
+    .notice p{color:var(--color-text-muted);font-size:var(--text-sm)}
+    .notice-dot{width:10px;height:10px;border-radius:50%;background:var(--color-warning);margin-top:.5rem;flex:0 0 auto;box-shadow:0 0 0 6px color-mix(in oklab,var(--color-warning) 12%, transparent)}
+
+    .segmented{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);padding:var(--space-2);background:color-mix(in oklab,var(--color-text) 4%, var(--color-surface));border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent);border-radius:calc(var(--radius-xl) + var(--space-1));margin-bottom:var(--space-5);box-shadow:var(--shadow-sm)}
+    .segmented button{min-height:52px;border-radius:var(--radius-lg);font-size:var(--text-sm);font-weight:700;letter-spacing:.01em;background:transparent;color:var(--color-text-muted)}
+    .segmented button[aria-selected="true"]{background:linear-gradient(180deg,color-mix(in oklab,var(--color-primary) 18%, var(--color-surface)),color-mix(in oklab,var(--color-primary) 8%, var(--color-surface-offset)));color:var(--color-text);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--color-primary) 28%, transparent),var(--shadow-sm)}
+
+    .view{display:grid;gap:var(--space-4)}
+    .hero-strip{display:grid;gap:var(--space-4)}
+    .hero-strip-grid{display:grid;gap:var(--space-4)}
+    @media (min-width: 900px){.hero-strip-grid{grid-template-columns:1.1fr .9fr}}
+    .panel{background:linear-gradient(180deg,var(--color-surface),var(--color-surface-2));border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent);border-radius:var(--radius-xl);box-shadow:var(--shadow-md);padding:var(--space-5)}
+    .panel h2{font:700 var(--text-lg)/1.12 var(--font-body);letter-spacing:-.02em;margin-bottom:var(--space-2)}
+    .panel p{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:var(--space-4)}
+    .eyebrow{display:inline-flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-faint);margin-bottom:var(--space-3)}
+    .status-row{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4)}
+    .pill{display:inline-flex;align-items:center;gap:var(--space-2);min-height:36px;padding:0 var(--space-3);border-radius:var(--radius-full);background:var(--color-surface-offset);border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent);font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted)}
+    .pill.online{color:var(--color-success)}
+    .pill.yellowgreen{color:var(--color-warning)}
+    .pill.green{color:var(--color-success-bright)}
+    .pill.error{color:var(--color-error)}
+
+    .stack{display:grid;gap:var(--space-4)}
+    .field{display:grid;gap:var(--space-2)}
+    .label{font-size:var(--text-sm);font-weight:700}
+    .input{width:100%;min-height:54px;padding:0 var(--space-4);background:var(--color-bg);border:1px solid color-mix(in oklab,var(--color-text) 12%, transparent);border-radius:var(--radius-md);font-size:var(--text-base);letter-spacing:.08em;text-transform:uppercase}
+    .input::placeholder{color:var(--color-text-faint);letter-spacing:normal;text-transform:none}
+    .button-row{display:grid;grid-template-columns:1fr;gap:var(--space-3)}
+    @media (min-width: 560px){.button-row{grid-template-columns:1fr 1fr}}
+    .btn{min-height:52px;padding:0 var(--space-4);border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:700;letter-spacing:.01em;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2)}
+    .btn-primary{background:var(--color-primary);color:var(--color-text-inverse);box-shadow:var(--shadow-sm)}
+    .btn-primary:hover{background:var(--color-primary-hover);transform:translateY(-1px)}
+    .btn-secondary{background:var(--color-surface-offset);border-color:color-mix(in oklab,var(--color-text) 12%, transparent);color:var(--color-text)}
+    .btn-secondary:hover{background:var(--color-surface-2)}
+    .btn-ghost{background:transparent;border-color:color-mix(in oklab,var(--color-text) 12%, transparent);color:var(--color-text-muted)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+    .code-block{display:grid;gap:var(--space-3);padding:var(--space-4);border-radius:var(--radius-lg);background:color-mix(in oklab,var(--color-primary) 10%, var(--color-surface));border:1px solid color-mix(in oklab,var(--color-primary) 22%, var(--color-border));margin-bottom:var(--space-4)}
+    .code-label{font-size:var(--text-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)}
+    .code-value{font:700 clamp(2rem,1.2rem + 2.2vw,3rem)/1 var(--font-display);letter-spacing:.16em;font-variant-numeric:tabular-nums lining-nums}
+    .tiny{font-size:var(--text-xs);color:var(--color-text-faint)}
+    .link-preview{font-size:var(--text-sm);word-break:break-all;color:var(--color-text-muted)}
+    .divider{height:1px;background:var(--color-divider);margin:var(--space-4) 0}
+
+    .status-grid{display:grid;gap:var(--space-4)}
+    @media (min-width: 860px){.status-grid{grid-template-columns:1fr 1fr}}
+    .status-card{display:grid;gap:var(--space-3);padding:var(--space-4);border-radius:var(--radius-lg);background:linear-gradient(180deg,var(--color-surface-offset),color-mix(in oklab,var(--color-surface-offset) 84%, var(--color-bg)));border:1px solid color-mix(in oklab,var(--color-text) 8%, transparent)}
+
+    .traffic-light{display:flex;align-items:center;gap:var(--space-4)}
+    .traffic-stack{display:grid;gap:var(--space-2);padding:var(--space-3);border-radius:999px;background:color-mix(in oklab,var(--color-text) 6%, transparent);border:1px solid color-mix(in oklab,var(--color-text) 8%, transparent)}
+    .traffic-lamp{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+    .traffic-lamp.red.active{background:#ff4d5a;box-shadow:0 0 0 6px rgba(255,77,90,.12),0 0 18px rgba(255,77,90,.55)}
+    .traffic-lamp.yellowgreen.active{background:var(--color-warning);box-shadow:0 0 0 6px color-mix(in oklab,var(--color-warning) 18%, transparent),0 0 18px color-mix(in oklab,var(--color-warning) 60%, transparent)}
+    .traffic-lamp.green.active{background:var(--color-success-bright);box-shadow:0 0 0 6px color-mix(in oklab,var(--color-success-bright) 18%, transparent),0 0 22px color-mix(in oklab,var(--color-success-bright) 68%, transparent)}
+    .traffic-copy strong{display:block;font-size:var(--text-lg);line-height:1.1}
+    .traffic-copy span{display:block;font-size:var(--text-sm);color:var(--color-text-muted)}
+
+    .meter-shell{position:relative;overflow:hidden;padding:var(--space-4);border-radius:var(--radius-lg);background:linear-gradient(180deg,color-mix(in oklab,var(--color-error) 7%, var(--color-surface-offset)),color-mix(in oklab,var(--color-bg) 84%, var(--color-surface-offset)));border:1px solid color-mix(in oklab,var(--color-text) 8%, transparent)}
+    .meter-shell.blinking::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.13) 0 14px,rgba(255,0,0,.22) 14px 28px);animation:alertBlink 540ms linear infinite;pointer-events:none}
+    .meter-shell > *{position:relative;z-index:1}
+    @keyframes alertBlink{0%{opacity:.12}50%{opacity:.9}100%{opacity:.12}}
+    .meter-header{display:flex;align-items:end;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-3)}
+    .meter-value{font-size:var(--text-lg);font-weight:700;font-variant-numeric:tabular-nums}
+    .meter-canvas{width:100%;height:180px;border-radius:calc(var(--radius-lg) - var(--space-2));background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);border:1px solid color-mix(in oklab,var(--color-text) 8%, transparent)}
+
+    .controls-grid{display:grid;gap:var(--space-4)}
+    @media (min-width: 860px){.controls-grid{grid-template-columns:1fr 1fr}}
+    .range{width:100%;accent-color:var(--color-primary)}
+    .switch-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-3) var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-offset);border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent)}
+    .switch-copy{display:grid;gap:0.125rem}
+    .switch-copy strong{font-size:var(--text-sm)}
+    .switch-copy span{font-size:var(--text-xs);color:var(--color-text-faint)}
+    .toggle{position:relative;width:60px;height:34px;display:inline-block}
+    .toggle input{position:absolute;opacity:0;pointer-events:none}
+    .toggle-slider{position:absolute;inset:0;border-radius:999px;background:color-mix(in oklab,var(--color-text) 10%, transparent);border:1px solid color-mix(in oklab,var(--color-text) 12%, transparent)}
+    .toggle-slider::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:var(--color-surface);box-shadow:var(--shadow-sm);transition:transform var(--transition),background var(--transition)}
+    .toggle input:checked + .toggle-slider{background:color-mix(in oklab,var(--color-primary) 28%, var(--color-surface-offset))}
+    .toggle input:checked + .toggle-slider::after{transform:translateX(26px);background:var(--color-primary)}
+
+    .log-panel{display:grid;gap:var(--space-4)}
+    @media (min-width: 900px){.log-panel{grid-template-columns:1fr .95fr}}
+    .log-list{list-style:none;display:grid;gap:var(--space-2);max-height:320px;overflow:auto;padding-right:var(--space-2);content-visibility:auto}
+    .log-list li{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3);background:var(--color-surface);border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent);border-radius:var(--radius-md);font-size:var(--text-sm);color:var(--color-text-muted)}
+    .log-time{font-variant-numeric:tabular-nums lining-nums;color:var(--color-text-faint);flex:0 0 auto}
+    .muted-card{padding:var(--space-4);border-radius:var(--radius-lg);background:var(--color-surface-offset);border:1px solid color-mix(in oklab,var(--color-text) 10%, transparent)}
+    .muted-card ul{list-style:none;display:grid;gap:var(--space-2)}
+    .muted-card li{font-size:var(--text-sm);color:var(--color-text-muted)}
+
+    .footer{padding:var(--space-8) 0 var(--space-10);color:var(--color-text-faint);font-size:var(--text-xs)}
+
+    @media (max-width: 699px){
+      .header{flex-direction:column}
+      .header-actions{align-self:flex-end}
+      .traffic-light{align-items:flex-start}
+      .meter-header{flex-direction:column;align-items:flex-start}
     }
   </style>
 </head>
 <body>
-  <a href="#main-content" class="skip-link">Zum Inhalt springen</a>
-  <div id="root"></div>
-  <div id="modal-root"></div>
-  <div id="toast-root" aria-live="polite" aria-atomic="true"></div>
+  <a class="skip-link" href="#main">Zum Inhalt springen</a>
+  <div class="app-shell">
+    <header class="header">
+      <div class="brand" aria-label="Babyphone App">
+        <svg class="brand-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="10" y="12" width="18" height="40" rx="9" stroke="currentColor" stroke-width="4"></rect>
+          <rect x="36" y="20" width="18" height="24" rx="9" stroke="currentColor" stroke-width="4"></rect>
+          <path d="M28 32h8" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+        </svg>
+        <div class="brand-copy">
+          <h1>Android Babyphone</h1>
+          <p>Klare Zweitasten-Ansicht für Babyseite und Elternseite, mit automatischer Audio-Wiederherstellung, kräftigerem Sender-Boost, Ampel und sichtbarem Geräuschpegel.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="themeToggle" type="button" aria-label="Zu hellem Modus wechseln" title="Theme wechseln">
+          <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="notice" aria-label="Hinweis">
+        <div class="notice-dot" aria-hidden="true"></div>
+        <div>
+          <p><strong>Wichtig:</strong> Beide Handys sollten möglichst im gleichen WLAN sein. Die erste Vermittlung braucht kurz Internet für PeerJS, danach läuft das Audio direkt per WebRTC zwischen den Geräten.</p>
+        </div>
+      </section>
+
+      <nav class="segmented" aria-label="Ansicht wählen">
+        <button id="tabSender" type="button" aria-selected="true" aria-controls="viewSender">Babyseite</button>
+        <button id="tabReceiver" type="button" aria-selected="false" aria-controls="viewReceiver">Elternseite</button>
+      </nav>
+
+      <section id="viewSender" class="view" aria-labelledby="senderTitle">
+        <div class="hero-strip-grid">
+          <article class="panel">
+            <div class="eyebrow">Babyseite</div>
+            <h2 id="senderTitle">Dieses Handy sendet Audio</h2>
+            <p>Einmal starten, ans Bettchen legen und laufen lassen. Die Audio-Kette nutzt Mikrofon, Sprach-Boost und Kompressor für mehr Lautheit.</p>
+            <div class="status-row">
+              <div class="pill" id="senderStatus">Bereit</div>
+              <div class="pill" id="micStatus">Mikrofon aus</div>
+              <div class="pill" id="wakeStatus">Wake Lock aus</div>
+              <div class="pill" id="senderBoostStatus">Boost 200%</div>
+            </div>
+            <div class="code-block" id="roomBlock">
+              <div class="code-label">Raumcode</div>
+              <div class="code-value" id="roomCode">------</div>
+              <div class="link-preview" id="roomLink">Link wird nach dem Start erzeugt.</div>
+              <div class="tiny">Der Code gilt nur für diese laufende Sitzung. Beim Stoppen wird die Verbindung sauber beendet.</div>
+            </div>
+            <div class="button-row">
+              <button class="btn btn-primary" id="startSenderBtn" type="button">Babyseite starten</button>
+              <button class="btn btn-secondary" id="copyCodeBtn" type="button" disabled>Code kopieren</button>
+            </div>
+            <div class="divider"></div>
+            <div class="button-row">
+              <button class="btn btn-ghost" id="stopSenderBtn" type="button" disabled>Sender stoppen</button>
+              <button class="btn btn-ghost" id="restartSenderBtn" type="button" disabled>Neu verbinden</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Stabilität</div>
+            <h2>Was diese Version stärker macht</h2>
+            <p>Die Bedienung ist simpler und die Audio-Wiederaufnahme deutlich hartnäckiger aufgebaut als zuvor.</p>
+            <div class="muted-card">
+              <ul>
+                <li>Nur die aktuell gewählte Rolle ist sichtbar, das verhindert Verwechslungen.</li>
+                <li>Der frühere Ton-Button wird zunächst versteckt und automatisch im Hintergrund ersetzt.</li>
+                <li>Der Sender-Regler reicht jetzt bis 400 Prozent, sinnvoll voreingestellt auf 200 Prozent.</li>
+                <li>Ein Pegelmesser zeigt selbst leise Geräusche gut sichtbar an.</li>
+                <li>Die Ampel unterscheidet klar zwischen keine Verbindung, Verbindung steht und echter Tonübertragung.</li>
+                <li>Das Alarmblinken kann per Schalter deaktiviert und per Regler fein eingestellt werden.</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="viewReceiver" class="view hidden" aria-labelledby="receiverTitle">
+        <div class="hero-strip-grid">
+          <article class="panel">
+            <div class="eyebrow">Elternseite</div>
+            <h2 id="receiverTitle">Dieses Handy empfängt Audio</h2>
+            <p>Code eingeben, verbinden und sofort sehen, ob nur die Verbindung steht oder gerade wirklich Geräusche ankommen.</p>
+            <div class="status-row">
+              <div class="pill" id="receiverStatus">Bereit</div>
+              <div class="pill" id="callStatus">Kein Audio</div>
+              <div class="pill" id="recoveryStatus">Auto-Recovery aus</div>
+              <div class="pill" id="blinkStatus">Blinken an</div>
+            </div>
+            <div class="stack">
+              <div class="field">
+                <label class="label" for="joinCode">Raumcode</label>
+                <input class="input" id="joinCode" name="joinCode" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="z. B. 438215" />
+              </div>
+              <div class="button-row">
+                <button class="btn btn-primary" id="joinBtn" type="button">Verbinden</button>
+                <button class="btn btn-secondary" id="playBtn" type="button" disabled>Ton manuell anstoßen</button>
+              </div>
+              <div class="button-row">
+                <button class="btn btn-ghost" id="stopReceiverBtn" type="button" disabled>Empfang stoppen</button>
+                <button class="btn btn-ghost" id="clearBtn" type="button">Zurücksetzen</button>
+              </div>
+              <div class="field">
+                <label class="label" for="senderGainSlider">Sender-Boost</label>
+                <input class="range" id="senderGainSlider" name="senderGainSlider" type="range" min="100" max="400" step="5" value="200" />
+                <div class="tiny" id="senderGainValue">200% — kräftiger Standard-Boost. Über 300% nur bei sehr leisem Mikrofon sinnvoll.</div>
+              </div>
+              <div class="field">
+                <label class="label" for="blinkThresholdSlider">Blinken ab Pegel</label>
+                <input class="range" id="blinkThresholdSlider" name="blinkThresholdSlider" type="range" min="6" max="70" step="1" value="18" />
+                <div class="tiny" id="blinkThresholdValue">18% — schon leise Geräusche lösen die Warnfläche aus.</div>
+              </div>
+              <div class="switch-row">
+                <div class="switch-copy">
+                  <strong>Blinken erlauben</strong>
+                  <span>Deaktivieren, wenn die Anzeige ruhiger bleiben soll.</span>
+                </div>
+                <label class="toggle" aria-label="Blinken ein- oder ausschalten">
+                  <input id="blinkToggle" type="checkbox" checked />
+                  <span class="toggle-slider" aria-hidden="true"></span>
+                </label>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="eyebrow">Live-Überwachung</div>
+            <h2>Verbindung, Ampel und Geräuschpegel</h2>
+            <p>Die grüne Ampel leuchtet erst bei echtem Audiosignal. Bei stehender Verbindung ohne Geräusch schaltet sie gelbgrün.</p>
+            <div class="status-grid">
+              <section class="status-card" aria-label="Ampelstatus">
+                <div class="traffic-light">
+                  <div class="traffic-stack" aria-hidden="true">
+                    <div class="traffic-lamp red active" id="lampRed"></div>
+                    <div class="traffic-lamp yellowgreen" id="lampYellow"></div>
+                    <div class="traffic-lamp green" id="lampGreen"></div>
+                  </div>
+                  <div class="traffic-copy">
+                    <strong id="ampelLabel">Noch nicht verbunden</strong>
+                    <span id="ampelHint">Sobald die Verbindung steht, schaltet die Ampel auf gelbgrün. Bei echtem Ton wird sie leuchtend grün.</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="status-card" aria-label="Audiozustand">
+                <div>
+                  <div class="eyebrow" style="margin-bottom: var(--space-2);">Audiozustand</div>
+                  <h3 id="parentHeadline" style="font-size: var(--text-lg); line-height: 1.1; margin-bottom: var(--space-2);">Bereit zum Verbinden</h3>
+                  <p id="parentSubline" style="margin: 0;">Nach dem Verbinden prüft die App laufend, ob wieder Ton anliegt, und stößt die Wiedergabe automatisch neu an.</p>
+                </div>
+              </section>
+            </div>
+
+            <div class="divider"></div>
+
+            <section class="meter-shell" id="meterShell" aria-label="Lautstärkepegel">
+              <div class="meter-header">
+                <div>
+                  <div class="eyebrow" style="margin-bottom: var(--space-2);">Pegelanzeige</div>
+                  <div class="tiny">Leise Geräusche werden absichtlich deutlich hervorgehoben.</div>
+                </div>
+                <div class="meter-value" id="meterValue">0%</div>
+              </div>
+              <canvas id="meterCanvas" class="meter-canvas" width="900" height="220" role="img" aria-label="Grafische Lautstärkeanzeige"></canvas>
+            </section>
+          </article>
+        </div>
+      </section>
+
+      <section class="log-panel" aria-label="Betriebsstatus und Hinweise" style="margin-top: var(--space-4);">
+        <article class="panel">
+          <div class="eyebrow">Betrieb</div>
+          <h2>Status und Ereignisse</h2>
+          <p>Hier sieht man bewusst die wichtigen Übergänge, damit der nächste Praxiseinsatz ruhig und kontrollierbar bleibt.</p>
+          <ul class="log-list" id="logList" aria-live="polite"></ul>
+        </article>
+
+        <article class="panel">
+          <div class="eyebrow">Hinweise</div>
+          <h2>Empfohlene Praxis</h2>
+          <p>Die technischen Grenzen des Browsers werden abgefedert, aber gute Gerätekonfiguration hilft zusätzlich.</p>
+          <div class="muted-card">
+            <ul>
+              <li>Auf beiden Geräten Akku-Optimierung für Chrome möglichst ausschalten.</li>
+              <li>Sender-Handy nah am Bettchen, aber nicht direkt unter Decke oder Stoff legen.</li>
+              <li>Bei sehr leisem Mikrofon zuerst 200 bis 300 Prozent testen, 400 Prozent nur als Notfall-Boost.</li>
+              <li>Wenn das Display ausgeht oder Android Audio pausiert, übernimmt die App zuerst die automatische Wiederherstellung.</li>
+              <li>Der manuelle Ton-Knopf bleibt versteckt und erscheint nur, wenn mehrere Auto-Recovery-Versuche scheitern.</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Für beste Ergebnisse: aktuelles Android Chrome, Bildschirm möglichst anlassen und diese Seite bei beiden Handys als Startbildschirm-Verknüpfung speichern.
+    </footer>
+  </div>
+
+  <audio id="remoteAudio" class="hidden" autoplay playsinline></audio>
 
   <script>
-    const SUPABASE_URL = 'https://vbxtdeedozcvhcamhipz.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZieHRkZWVkb3pjdmhjYW1oaXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTIyNTAsImV4cCI6MjA4ODkyODI1MH0.Ners2V_WXlt2sTh8UtKC6bk7ZcZn2LgfUzbFExpz9ik';
-    const HAS_SUPABASE_CONFIG = !SUPABASE_URL.startsWith('[') && !SUPABASE_ANON_KEY.startsWith('[');
-    const { createClient } = supabase;
-
-    const cookieStorage = {
-      getItem(key) {
-        const match = document.cookie.match(new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)'));
-        return match ? decodeURIComponent(match[1]) : null;
-      },
-      setItem(key, value) {
-        const maxAge = 60 * 60 * 24 * 30;
-        const secure = location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = encodeURIComponent(key) + '=' + encodeURIComponent(value) + '; path=/; max-age=' + maxAge + '; SameSite=Lax' + secure;
-      },
-      removeItem(key) {
-        const secure = location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = encodeURIComponent(key) + '=; path=/; max-age=0; SameSite=Lax' + secure;
-      }
-    };
-
-    const db = HAS_SUPABASE_CONFIG ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        storage: cookieStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }) : null;
-
-    const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-    const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-    const TAG_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f97316', '#f59e0b', '#84cc16', '#10b981', '#14b8a6', '#06b6d4'];
-
-    const refs = {
-      root: document.getElementById('root'),
-      modalRoot: document.getElementById('modal-root'),
-      toastRoot: document.getElementById('toast-root'),
-      header: null,
-      filterWrap: null,
-      main: null,
-      bottom: null
-    };
-
-    const state = {
-      session: null,
-      initialized: false,
-      loading: false,
-      view: 'calendar',
-      selectedYear: new Date().getFullYear(),
-      showFilters: true,
-      activeFilters: new Set(),
-      entries: [],
-      tags: [],
-      modal: null,
-      searchQuery: '',
-      searchDebounced: '',
-      searchTimer: null,
-      channel: null,
-      toastTimer: null,
-      suppressRemoteUntil: 0,
-      pendingScrollDate: null,
-      scrollPositions: {
-        calendar: 0,
-        list: 0,
-        search: 0
-      },
-      searchInputFocused: false
-    };
-
-    function safeIcons() {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-    }
-
-    function brandSVG() {
-      return `
-        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="5" width="18" height="16" rx="4"></rect>
-          <path d="M16 3v4M8 3v4M3 10h18"></path>
-          <path d="M8 14h3M13 14h3M8 18h3"></path>
-        </svg>
-      `;
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function escapeRegExp(value) {
-      return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
-    function toRgb(hex) {
-      const safe = String(hex || '#6366f1').replace('#', '');
-      const normalized = safe.length === 3 ? safe.split('').map(x => x + x).join('') : safe;
-      const int = parseInt(normalized, 16);
-      return {
-        r: (int >> 16) & 255,
-        g: (int >> 8) & 255,
-        b: int & 255
-      };
-    }
-
-    function tagChipStyle(color) {
-      const { r, g, b } = toRgb(color || '#6366f1');
-      return `background: rgba(${r}, ${g}, ${b}, 0.16); border-color: rgba(${r}, ${g}, ${b}, 0.28); color: rgb(${Math.min(255, r + 90)}, ${Math.min(255, g + 90)}, ${Math.min(255, b + 90)});`;
-    }
-
-    function parseDate(dateStr) {
-      const [y, m, d] = String(dateStr).split('-').map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function todayString() {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    }
-
-    function formatDateLabel(dateStr) {
-      const dt = parseDate(dateStr);
-      return `${WEEKDAYS[dt.getDay()]}, ${dt.getDate()}.${dt.getMonth() + 1}.${dt.getFullYear()}`;
-    }
-
-    function formatCreatedAt(value) {
-      if (!value) return '';
-      const dt = new Date(value);
-      return dt.toLocaleString('de-DE', {
-        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
-    }
-
-    function getTagById(tagId) {
-      return state.tags.find(tag => String(tag.id) === String(tagId)) || null;
-    }
-
-    function renderTagChipById(tagId) {
-      const tag = getTagById(tagId);
-      if (!tag) return '';
-      return `<span class="tag-chip" style="${tagChipStyle(tag.color)}">${escapeHtml(tag.name)}</span>`;
-    }
-
-    function entryMatchesFilters(entry) {
-      if (!state.activeFilters.size) return true;
-      const current = (entry.tags || []).map(String);
-      return current.some(tagId => state.activeFilters.has(String(tagId)));
-    }
-
-    function getFilteredEntries() {
-      return state.entries.filter(entryMatchesFilters);
-    }
-
-    function sortedListEntries() {
-      return [...getFilteredEntries()].sort((a, b) => {
-        const createdDiff = new Date(b.created_at || 0) - new Date(a.created_at || 0);
-        if (createdDiff !== 0) return createdDiff;
-        return String(b.id).localeCompare(String(a.id));
-      });
-    }
-
-    function sortedSearchEntries(query) {
-      const q = String(query || '').trim().toLowerCase();
-      if (!q) return [];
-      return getFilteredEntries()
-        .filter(entry => String(entry.text || '').toLowerCase().includes(q))
-        .sort((a, b) => {
-          const dateDiff = parseDate(b.date) - parseDate(a.date);
-          if (dateDiff !== 0) return dateDiff;
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-        });
-    }
-
-    function excerptWithHighlight(text, query) {
-      const source = String(text || '');
-      const q = String(query || '').trim();
-      if (!q) return escapeHtml(source.slice(0, 180));
-      const lower = source.toLowerCase();
-      const index = lower.indexOf(q.toLowerCase());
-      if (index === -1) return escapeHtml(source.slice(0, 180));
-      const start = index > 40 ? index - 40 : 0;
-      const end = Math.min(source.length, index + q.length + 80);
-      const prefix = start > 0 ? '…' : '';
-      const suffix = end < source.length ? '…' : '';
-      const snippet = source.slice(start, end);
-      const regex = new RegExp(escapeRegExp(q), 'ig');
-      return prefix + escapeHtml(snippet).replace(regex, match => `<mark>${escapeHtml(match)}</mark>`) + suffix;
-    }
-
-    function showToast(message, type = 'success') {
-      clearTimeout(state.toastTimer);
-      refs.toastRoot.innerHTML = `
-        <div class="toast ${type === 'error' ? 'toast--error' : ''}">
-          <span class="toast-icon"><i data-lucide="${type === 'error' ? 'circle-alert' : 'check'}"></i></span>
-          <span>${escapeHtml(message)}</span>
-        </div>
-      `;
-      safeIcons();
-      state.toastTimer = setTimeout(() => {
-        refs.toastRoot.innerHTML = '';
-      }, 2600);
-    }
-
-    function authErrorMessage(message) {
-      if (!message) return 'Anmeldung fehlgeschlagen.';
-      if (/invalid login credentials/i.test(message)) return 'E-Mail oder Passwort ist falsch.';
-      if (/email not confirmed/i.test(message)) return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
-      return message;
-    }
-
-    function renderSetupScreen() {
-      refs.root.innerHTML = `
-        <div class="login-shell">
-          <section class="login-card" aria-labelledby="setup-title">
-            <div class="login-brand">
-              <div class="logo-mark" aria-hidden="true">${brandSVG()}</div>
-              <div>
-                <div id="setup-title" class="login-title">Kalender</div>
-                <div class="login-copy">Supabase-Konfiguration fehlt noch.</div>
-              </div>
-            </div>
-            <div class="setup-note">
-              Trage oben im Script <strong>SUPABASE_URL</strong> und <strong>SUPABASE_ANON_KEY</strong> ein und deploye danach erneut.
-            </div>
-          </section>
-        </div>
-      `;
-      safeIcons();
-    }
-
-    function renderLogin(error = '', submitting = false) {
-      refs.root.innerHTML = `
-        <div class="login-shell">
-          <section class="login-card" aria-labelledby="login-title">
-            <div class="login-brand">
-              <div class="logo-mark" aria-hidden="true">${brandSVG()}</div>
-              <div>
-                <div id="login-title" class="login-title">Kalender</div>
-                <div class="login-copy">Mit E-Mail und Passwort anmelden.</div>
-              </div>
-            </div>
-            <form id="login-form" class="login-form" novalidate>
-              <div class="field">
-                <label class="label" for="login-email">E-Mail</label>
-                <input id="login-email" name="email" type="email" autocomplete="email" required placeholder="name@example.com" />
-              </div>
-              <div class="field">
-                <label class="label" for="login-password">Passwort</label>
-                <input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••" />
-              </div>
-              ${error ? `<div class="auth-error" role="alert">${escapeHtml(error)}</div>` : ''}
-              <div class="helper-row">
-                <span class="helper-text">Aktive Session wird automatisch wiederverwendet.</span>
-              </div>
-              <button class="btn btn-primary" type="submit" ${submitting ? 'disabled' : ''}>${submitting ? 'Anmeldung…' : 'Anmelden'}</button>
-            </form>
-          </section>
-        </div>
-      `;
-      const form = document.getElementById('login-form');
-      const emailInput = document.getElementById('login-email');
-      emailInput?.focus();
-      form?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const email = form.email.value.trim();
-        const password = form.password.value;
-        renderLogin('', true);
-        try {
-          const { error: signInError } = await db.auth.signInWithPassword({ email, password });
-          if (signInError) throw signInError;
-        } catch (err) {
-          renderLogin(authErrorMessage(err?.message || ''));
-        }
-      });
-      safeIcons();
-    }
-
-    function renderAppShell() {
-      refs.root.innerHTML = `
-        <div class="app-shell">
-          <header id="app-header" class="app-header"></header>
-          <div id="filter-wrap" class="filter-wrap"></div>
-          <main id="main-content" class="app-main" tabindex="-1"></main>
-          <nav id="bottom-bar" class="bottom-bar" aria-label="Jahresnavigation"></nav>
-          <input id="csv-import-input" class="hidden" type="file" accept=".csv,text/csv" />
-        </div>
-      `;
-      refs.header = document.getElementById('app-header');
-      refs.filterWrap = document.getElementById('filter-wrap');
-      refs.main = document.getElementById('main-content');
-      refs.bottom = document.getElementById('bottom-bar');
-      refs.main.addEventListener('scroll', () => {
-        state.scrollPositions[state.view] = refs.main.scrollTop;
-      }, { passive: true });
-      document.getElementById('csv-import-input')?.addEventListener('change', handleCsvImport);
-      safeIcons();
-    }
-
-    function renderHeader() {
-      refs.header.className = `app-header ${state.view === 'search' ? 'has-search' : ''}`;
-      refs.header.innerHTML = `
-        <div class="header-left">
-          <button class="brand" type="button" aria-label="Heute anzeigen" data-action="go-today-brand">${brandSVG()}</button>
-          <div class="view-tabs" role="tablist" aria-label="Ansichten">
-            <button class="tab-btn ${state.view === 'calendar' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'calendar'}" data-view="calendar">K</button>
-            <button class="tab-btn ${state.view === 'list' ? 'is-active' : ''}" type="button" role="tab" aria-selected="${state.view === 'list'}" data-view="list">L</button>
-          </div>
-        </div>
-        <div class="header-center">
-          ${state.view === 'search' ? `
-            <div class="header-search">
-              <i data-lucide="search"></i>
-              <input id="search-input" type="search" inputmode="search" placeholder="Einträge durchsuchen" value="${escapeHtml(state.searchQuery)}" aria-label="Einträge durchsuchen" />
-            </div>
-          ` : ''}
-        </div>
-        <div class="header-right">
-          <button class="icon-btn ${state.view === 'search' ? 'is-active' : ''}" type="button" data-action="switch-search" aria-label="Suche öffnen"><i data-lucide="search"></i></button>
-          <button class="icon-btn ${state.showFilters ? 'is-active' : ''}" type="button" data-action="toggle-filters" aria-label="Tag-Filter ein- oder ausblenden"><i data-lucide="tags"></i></button>
-          <button class="icon-btn" type="button" data-action="import-csv" aria-label="CSV importieren"><i data-lucide="upload"></i></button>
-          <button class="icon-btn" type="button" data-action="export-csv" aria-label="CSV exportieren"><i data-lucide="download"></i></button>
-          <button class="icon-btn" type="button" data-action="logout" aria-label="Abmelden"><i data-lucide="log-out"></i></button>
-        </div>
-      `;
-
-      refs.header.querySelectorAll('[data-view]').forEach(btn => {
-        btn.addEventListener('click', () => switchView(btn.dataset.view));
-      });
-
-      refs.header.querySelector('[data-action="go-today-brand"]')?.addEventListener('click', goToToday);
-      refs.header.querySelector('[data-action="switch-search"]')?.addEventListener('click', () => switchView('search'));
-      refs.header.querySelector('[data-action="toggle-filters"]')?.addEventListener('click', () => {
-        state.showFilters = !state.showFilters;
-        renderHeader();
-        renderFilterBar();
-      });
-      refs.header.querySelector('[data-action="import-csv"]')?.addEventListener('click', () => {
-        document.getElementById('csv-import-input')?.click();
-      });
-      refs.header.querySelector('[data-action="export-csv"]')?.addEventListener('click', exportCsv);
-      refs.header.querySelector('[data-action="logout"]')?.addEventListener('click', logout);
-
-      const searchInput = document.getElementById('search-input');
-      if (searchInput) {
-        searchInput.addEventListener('input', (event) => {
-          state.searchQuery = event.target.value;
-          clearTimeout(state.searchTimer);
-          state.searchTimer = setTimeout(() => {
-            state.searchDebounced = state.searchQuery;
-            renderMain(true);
-          }, 300);
-        });
-        requestAnimationFrame(() => {
-          if (state.view === 'search') searchInput.focus();
-        });
-      }
-      safeIcons();
-    }
-
-    function renderFilterBar() {
-      refs.filterWrap.className = `filter-wrap ${state.showFilters ? 'is-open' : 'is-closed'}`;
-      refs.filterWrap.innerHTML = state.showFilters ? `
-        <div class="filter-bar" aria-label="Tag-Filter">
-          <span class="filter-label">Filter:</span>
-          <button class="filter-btn filter-all ${state.activeFilters.size === 0 ? 'is-active' : ''}" type="button" data-filter="all">Alle</button>
-          ${state.tags.map(tag => `
-            <button class="filter-btn ${state.activeFilters.has(String(tag.id)) ? 'is-active' : ''}" type="button" data-filter="${escapeHtml(String(tag.id))}" style="${tagChipStyle(tag.color)}">${escapeHtml(tag.name)}</button>
-          `).join('')}
-          <button class="icon-btn manage-tags-btn" type="button" data-action="manage-tags" aria-label="Tags verwalten"><i data-lucide="settings-2"></i></button>
-        </div>
-      ` : '';
-
-      refs.filterWrap.querySelector('[data-filter="all"]')?.addEventListener('click', () => {
-        state.activeFilters = new Set();
-        renderFilterBar();
-        renderMain(false);
-      });
-
-      refs.filterWrap.querySelectorAll('[data-filter]').forEach(btn => {
-        const value = btn.dataset.filter;
-        if (value === 'all') return;
-        btn.addEventListener('click', () => {
-          const key = String(value);
-          if (state.activeFilters.has(String(key))) state.activeFilters.delete(String(key));
-          else state.activeFilters.add(String(key));
-          renderFilterBar();
-          renderMain(false);
-        });
-      });
-
-      refs.filterWrap.querySelector('[data-action="manage-tags"]')?.addEventListener('click', openTagsModal);
-      safeIcons();
-    }
-
-    function renderBottomBar() {
-      const selected = Number(state.selectedYear);
-      const years = Array.from({ length: 6 }, (_, index) => selected - 1 + index);
-      refs.bottom.innerHTML = `
-        <button class="icon-btn" type="button" data-action="prev-year" aria-label="Vorheriges Jahr"><i data-lucide="chevron-left"></i></button>
-        <div class="year-strip">
-          ${years.map(year => `<button class="year-btn ${state.selectedYear === year ? 'is-active' : ''}" type="button" data-year="${year}">${year}</button>`).join('')}
-        </div>
-        <button class="icon-btn" type="button" data-action="next-year" aria-label="Nächstes Jahr"><i data-lucide="chevron-right"></i></button>
-        <button class="today-btn btn" type="button" data-action="today"><i data-lucide="arrow-up"></i>&nbsp;Heute</button>
-      `;
-      refs.bottom.querySelectorAll('[data-year]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.selectedYear = Number(btn.dataset.year);
-          state.pendingScrollDate = null;
-          renderBottomBar();
-          renderMain(false, true);
-        });
-      });
-      refs.bottom.querySelector('[data-action="prev-year"]')?.addEventListener('click', () => {
-        state.selectedYear -= 1;
-        state.pendingScrollDate = null;
-        renderBottomBar();
-        renderMain(false, true);
-      });
-      refs.bottom.querySelector('[data-action="next-year"]')?.addEventListener('click', () => {
-        state.selectedYear += 1;
-        state.pendingScrollDate = null;
-        renderBottomBar();
-        renderMain(false, true);
-      });
-      refs.bottom.querySelector('[data-action="today"]')?.addEventListener('click', goToToday);
-      safeIcons();
-    }
-
-    function buildCalendarHTML() {
-      const grouped = new Map();
-      getFilteredEntries().forEach(entry => {
-        if (!grouped.has(entry.date)) grouped.set(entry.date, []);
-        grouped.get(entry.date).push(entry);
-      });
-
-      const year = state.selectedYear;
-      const start = new Date(year, 0, 1);
-      const end = new Date(year, 11, 31);
-      const today = todayString();
-      let current = new Date(start);
-      let lastMonth = -1;
-      let html = '<div class="calendar-wrap"><div class="calendar-grid" id="cal">';
-
-      while (current <= end) {
-        const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
-        if (current.getMonth() !== lastMonth) {
-          lastMonth = current.getMonth();
-          html += `<div class="month-row">${MONTHS[current.getMonth()]} ${current.getFullYear()}</div>`;
-        }
-        const weekend = current.getDay() === 0 || current.getDay() === 6;
-        const dayEntries = grouped.get(dateStr) || [];
-        html += `
-          <section class="day-row ${dateStr === today ? 'is-today' : ''}" data-day-row="${dateStr}">
-            <div class="day-date ${weekend ? 'is-weekend' : ''}" title="${formatDateLabel(dateStr)}" aria-label="${formatDateLabel(dateStr)}">
-              <span class="weekday">${WEEKDAYS[current.getDay()]}</span>
-              <span class="full-date">${current.getDate()}.${current.getMonth() + 1}.</span>
-            </div>
-            <div class="day-body">
-              <div class="day-entries">
-                ${dayEntries.length ? dayEntries.map(entry => `
-                  <article class="entry-item">
-                    <button class="entry-main" type="button" data-action="edit-entry" data-entry-id="${escapeHtml(String(entry.id))}">
-                      <div class="entry-text">${escapeHtml(entry.text)}</div>
-                      ${(entry.tags || []).length ? `<div class="entry-meta">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
-                    </button>
-                    <button class="entry-delete" type="button" data-action="delete-entry" data-entry-id="${escapeHtml(String(entry.id))}" aria-label="Eintrag löschen"><i data-lucide="trash-2"></i></button>
-                  </article>
-                `).join('') : `<div class="empty-day">Kein Eintrag</div>`}
-              </div>
-              <button class="icon-btn add-entry-btn" type="button" data-action="new-entry" data-date="${dateStr}" aria-label="Eintrag für ${formatDateLabel(dateStr)} anlegen"><i data-lucide="plus"></i></button>
-            </div>
-          </section>
-        `;
-        current.setDate(current.getDate() + 1);
-      }
-
-      html += '</div></div>';
-      return html;
-    }
-
-    function buildListHTML() {
-      const items = sortedListEntries();
-      if (!items.length) {
-        return `<div class="list-wrap"><div class="panel-empty"><strong>Keine Einträge gefunden.</strong><br />Passe die Tag-Filter an oder lege einen neuen Eintrag an.</div></div>`;
-      }
-      return `
-        <div class="list-wrap">
-          ${items.map(entry => `
-            <article class="list-row">
-              <div class="list-date">
-                <strong>${WEEKDAYS[parseDate(entry.date).getDay()]}</strong>
-                <span>${parseDate(entry.date).getDate()}.${parseDate(entry.date).getMonth() + 1}.${parseDate(entry.date).getFullYear()}</span>
-              </div>
-              <button class="list-main" type="button" data-action="edit-entry" data-entry-id="${escapeHtml(String(entry.id))}">
-                <div class="entry-text">${escapeHtml(entry.text)}</div>
-                ${(entry.tags || []).length ? `<div class="list-sub">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
-                <div class="list-created">Erstellt: ${escapeHtml(formatCreatedAt(entry.created_at))}</div>
-              </button>
-            </article>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function buildSearchHTML() {
-      const query = state.searchDebounced.trim();
-      if (!query) {
-        return `<div class="search-wrap"><div class="search-help"><strong>Suche aktiv.</strong><br />Tippe im Suchfeld oben, um Einträge sofort zu finden.</div></div>`;
-      }
-      const items = sortedSearchEntries(query);
-      if (!items.length) {
-        return `<div class="search-wrap"><div class="panel-empty"><strong>Keine Treffer.</strong><br />Für „${escapeHtml(query)}“ wurde nichts gefunden.</div></div>`;
-      }
-      return `
-        <div class="search-wrap">
-          <div class="search-results">
-            ${items.map(entry => `
-              <article class="search-row">
-                <div class="search-date">
-                  <strong>${WEEKDAYS[parseDate(entry.date).getDay()]}</strong>
-                  <span>${parseDate(entry.date).getDate()}.${parseDate(entry.date).getMonth() + 1}.${parseDate(entry.date).getFullYear()}</span>
-                </div>
-                <button class="search-main" type="button" data-action="jump-to-date" data-date="${entry.date}">
-                  <div>${excerptWithHighlight(entry.text, query)}</div>
-                  ${(entry.tags || []).length ? `<div class="list-sub">${(entry.tags || []).map(renderTagChipById).join('')}</div>` : ''}
-                </button>
-              </article>
-            `).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderMain(preserveScroll = true, forceTop = false) {
-      if (!refs.main) return;
-      const previous = refs.main.scrollTop;
-      const remembered = preserveScroll ? previous : (state.scrollPositions[state.view] || 0);
-      let html = '';
-      if (state.loading) {
-        html = `<div class="panel-loading"><div class="skeleton-list"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div></div>`;
-      } else if (state.view === 'calendar') {
-        html = buildCalendarHTML();
-      } else if (state.view === 'list') {
-        html = buildListHTML();
-      } else {
-        html = buildSearchHTML();
-      }
-      refs.main.innerHTML = html;
-      bindMainEvents();
-      safeIcons();
-      requestAnimationFrame(() => {
-        if (state.pendingScrollDate) {
-          scrollToDateRow(state.pendingScrollDate);
-          state.pendingScrollDate = null;
-          return;
-        }
-        refs.main.scrollTop = forceTop ? 0 : remembered;
-      });
-    }
-
-    function bindMainEvents() {
-      refs.main.querySelectorAll('[data-action="new-entry"]').forEach(btn => {
-        btn.addEventListener('click', () => openEntryModal({ date: btn.dataset.date }));
-      });
-      refs.main.querySelectorAll('[data-action="edit-entry"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const entry = state.entries.find(item => String(item.id) === String(btn.dataset.entryId));
-          if (entry) openEntryModal(entry);
-        });
-      });
-      refs.main.querySelectorAll('[data-action="delete-entry"]').forEach(btn => {
-        btn.addEventListener('click', async (event) => {
-          event.stopPropagation();
-          const entry = state.entries.find(item => String(item.id) === String(btn.dataset.entryId));
-          if (entry) await deleteEntry(entry);
-        });
-      });
-      refs.main.querySelectorAll('[data-action="jump-to-date"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const date = btn.dataset.date;
-          state.selectedYear = parseDate(date).getFullYear();
-          state.view = 'calendar';
-          state.pendingScrollDate = date;
-          renderHeader();
-          renderBottomBar();
-          renderMain(false, false);
-        });
-      });
-    }
-
-    function switchView(view) {
-      if (view === state.view) return;
-      if (refs.main) state.scrollPositions[state.view] = refs.main.scrollTop;
-      state.view = view;
-      renderHeader();
-      renderMain(false, false);
-    }
-
-    function goToToday() {
-      const today = todayString();
-      state.selectedYear = parseDate(today).getFullYear();
-      state.view = 'calendar';
-      state.pendingScrollDate = today;
-      renderHeader();
-      renderBottomBar();
-      renderMain(false, true);
-    }
-
-    function scrollToDateRow(dateStr) {
-      const row = refs.main.querySelector(`[data-day-row="${CSS.escape(dateStr)}"]`);
-      if (!row) {
-        refs.main.scrollTop = 0;
-        return;
-      }
-
-      const alignRow = () => {
-        const mainRect = refs.main.getBoundingClientRect();
-        const rowRect = row.getBoundingClientRect();
-        const desiredTop = Math.max(20, Math.min(96, Math.round(refs.main.clientHeight * 0.28)));
-        const delta = rowRect.top - mainRect.top - desiredTop;
-        if (Math.abs(delta) > 1) refs.main.scrollTop += delta;
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const els = {
+        themeToggle: $('themeToggle'),
+        themeIcon: $('themeIcon'),
+        tabSender: $('tabSender'),
+        tabReceiver: $('tabReceiver'),
+        viewSender: $('viewSender'),
+        viewReceiver: $('viewReceiver'),
+        roomCode: $('roomCode'),
+        roomLink: $('roomLink'),
+        joinCode: $('joinCode'),
+        startSenderBtn: $('startSenderBtn'),
+        stopSenderBtn: $('stopSenderBtn'),
+        restartSenderBtn: $('restartSenderBtn'),
+        copyCodeBtn: $('copyCodeBtn'),
+        joinBtn: $('joinBtn'),
+        stopReceiverBtn: $('stopReceiverBtn'),
+        clearBtn: $('clearBtn'),
+        playBtn: $('playBtn'),
+        remoteAudio: $('remoteAudio'),
+        senderGainSlider: $('senderGainSlider'),
+        senderGainValue: $('senderGainValue'),
+        blinkThresholdSlider: $('blinkThresholdSlider'),
+        blinkThresholdValue: $('blinkThresholdValue'),
+        blinkToggle: $('blinkToggle'),
+        logList: $('logList'),
+        senderStatus: $('senderStatus'),
+        receiverStatus: $('receiverStatus'),
+        micStatus: $('micStatus'),
+        callStatus: $('callStatus'),
+        wakeStatus: $('wakeStatus'),
+        senderBoostStatus: $('senderBoostStatus'),
+        recoveryStatus: $('recoveryStatus'),
+        blinkStatus: $('blinkStatus'),
+        lampRed: $('lampRed'),
+        lampYellow: $('lampYellow'),
+        lampGreen: $('lampGreen'),
+        ampelLabel: $('ampelLabel'),
+        ampelHint: $('ampelHint'),
+        parentHeadline: $('parentHeadline'),
+        parentSubline: $('parentSubline'),
+        meterShell: $('meterShell'),
+        meterCanvas: $('meterCanvas'),
+        meterValue: $('meterValue')
       };
 
-      row.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
-      alignRow();
-      requestAnimationFrame(() => {
-        alignRow();
-        setTimeout(alignRow, 80);
-        setTimeout(alignRow, 220);
-      });
-    }
-
-    function openEntryModal(entryOrDraft) {
-      const isEdit = Boolean(entryOrDraft.id);
-      state.modal = {
-        type: 'entry',
-        isEdit,
-        id: entryOrDraft.id || null,
-        date: entryOrDraft.date || todayString(),
-        text: entryOrDraft.text || '',
-        tags: new Set((entryOrDraft.tags || []).map(String)),
-        error: '',
-        saving: false
+      const state = {
+        mode: null,
+        view: 'sender',
+        peer: null,
+        dataConn: null,
+        activeCall: null,
+        localStream: null,
+        rawMicStream: null,
+        audioContext: null,
+        micSourceNode: null,
+        highPassNode: null,
+        presenceNode: null,
+        gainNode: null,
+        compressorNode: null,
+        processedDestination: null,
+        roomCode: '',
+        wakeLock: null,
+        theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+        waitingForRemoteAudio: false,
+        connectTimeout: null,
+        outgoingCallPeerId: null,
+        senderGain: 2,
+        blinkThreshold: 0.18,
+        blinkEnabled: true,
+        receiverAudioContext: null,
+        receiverAnalyser: null,
+        receiverSourceNode: null,
+        receiverMasterGain: null,
+        receiverStream: null,
+        meterArray: null,
+        freqArray: null,
+        meterFrame: null,
+        healthTimer: null,
+        lastRecoverAt: 0,
+        recoveryFailures: 0,
+        lastSignalAt: 0,
+        smoothedLevel: 0,
+        displayLevel: 0,
+        audioDetected: false,
+        trackMuted: false,
+        suppressCloseLog: false
       };
-      renderModal();
-    }
 
-    function openTagsModal() {
-      state.modal = {
-        type: 'tags',
-        name: '',
-        color: TAG_COLORS[0],
-        error: '',
-        saving: false,
-        deleting: null
-      };
-      renderModal();
-    }
+      document.documentElement.setAttribute('data-theme', state.theme);
+      updateThemeIcon();
+      hydrateJoinCodeFromQuery();
+      bindEvents();
+      syncSenderGainUi();
+      syncBlinkUi();
+      setView(state.view);
+      startMeterLoop();
+      drawMeter(0, false);
+      logEvent('App bereit. Oben zwischen Babyseite und Elternseite wählen.');
+      updateAllStatus();
 
-    function closeModal() {
-      state.modal = null;
-      refs.modalRoot.innerHTML = '';
-    }
-
-    function renderModal() {
-      const modal = state.modal;
-      if (!modal) {
-        refs.modalRoot.innerHTML = '';
-        return;
-      }
-
-      if (modal.type === 'entry') {
-        refs.modalRoot.innerHTML = `
-          <div class="modal-overlay" id="modal-overlay">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="entry-modal-title">
-              <div class="modal-head">
-                <div>
-                  <div id="entry-modal-title" class="modal-title">${modal.isEdit ? 'Eintrag bearbeiten' : 'Neuer Eintrag'}: ${escapeHtml(formatDateLabel(modal.date))}</div>
-                  <div class="modal-subtitle">Text und Tags verwalten.</div>
-                </div>
-                <button class="icon-btn" type="button" data-action="close-modal" aria-label="Modal schließen"><i data-lucide="x"></i></button>
-              </div>
-              <form id="entry-form">
-                <div class="modal-body">
-                  ${modal.error ? `<div class="modal-error" role="alert">${escapeHtml(modal.error)}</div>` : ''}
-                  <div class="field">
-                    <label class="label" for="entry-textarea">Eintrag</label>
-                    <textarea id="entry-textarea" name="text" rows="3" placeholder="Notiz für diesen Tag">${escapeHtml(modal.text)}</textarea>
-                  </div>
-                  <div class="field">
-                    <div class="label">Tags</div>
-                    <div class="tag-picker">
-                      ${state.tags.length ? state.tags.map(tag => `
-                        <button class="tag-pill ${modal.tags.has(String(tag.id)) ? 'is-active' : ''}" type="button" data-action="toggle-modal-tag" data-tag-id="${escapeHtml(String(tag.id))}" style="${tagChipStyle(tag.color)}">${escapeHtml(tag.name)}</button>
-                      `).join('') : '<div class="field-hint">Noch keine Tags vorhanden.</div>'}
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-foot">
-                  <div class="modal-actions">
-                    <button class="btn" type="button" data-action="close-modal">Abbrechen</button>
-                    <button class="btn btn-primary" type="submit">${modal.saving ? 'Speichern…' : 'Speichern'}</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        `;
-      }
-
-      if (modal.type === 'tags') {
-        refs.modalRoot.innerHTML = `
-          <div class="modal-overlay" id="modal-overlay">
-            <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="tags-modal-title">
-              <div class="modal-head">
-                <div>
-                  <div id="tags-modal-title" class="modal-title">Tags verwalten</div>
-                  <div class="modal-subtitle">Neue Tags anlegen, bestehende Tags löschen.</div>
-                </div>
-                <button class="icon-btn" type="button" data-action="close-modal" aria-label="Modal schließen"><i data-lucide="x"></i></button>
-              </div>
-              <form id="tags-form">
-                <div class="modal-body">
-                  ${modal.error ? `<div class="modal-error" role="alert">${escapeHtml(modal.error)}</div>` : ''}
-                  <div class="field">
-                    <label class="label" for="tag-name">Name</label>
-                    <input id="tag-name" name="name" maxlength="30" placeholder="z. B. Urlaub" value="${escapeHtml(modal.name)}" />
-                    <div class="field-hint">Maximal 30 Zeichen.</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Farbe</div>
-                    <div class="color-grid">
-                      ${TAG_COLORS.map(color => `
-                        <button class="color-dot ${modal.color === color ? 'is-active' : ''}" type="button" data-action="pick-color" data-color="${color}" style="background:${color}" aria-label="Farbe ${color}"></button>
-                      `).join('')}
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Vorhandene Tags</div>
-                    <div class="tags-list">
-                      ${state.tags.length ? state.tags.map(tag => `
-                        <div class="tag-row">
-                          <div class="tag-row-main">
-                            <span class="tag-swatch" style="background:${tag.color}"></span>
-                            <div>
-                              <div class="tag-name">${escapeHtml(tag.name)}</div>
-                              <div class="tag-meta">${escapeHtml(tag.color)}</div>
-                            </div>
-                          </div>
-                          <button class="icon-btn icon-btn--danger" type="button" data-action="delete-tag" data-tag-id="${escapeHtml(String(tag.id))}" aria-label="Tag löschen"><i data-lucide="trash-2"></i></button>
-                        </div>
-                      `).join('') : '<div class="field-hint">Noch keine Tags vorhanden.</div>'}
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-foot">
-                  <div class="modal-actions">
-                    <button class="btn" type="button" data-action="close-modal">Schließen</button>
-                    <button class="btn btn-primary" type="submit">${modal.saving ? 'Speichern…' : 'Tag anlegen'}</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        `;
-      }
-
-      bindModalEvents();
-      safeIcons();
-      const overlay = document.getElementById('modal-overlay');
-      overlay?.addEventListener('click', e => {
-        if (e.target === overlay) closeModal();
-      });
-      requestAnimationFrame(() => {
-        const focusEl = modal.type === 'entry' ? document.getElementById('entry-textarea') : document.getElementById('tag-name');
-        focusEl?.focus();
-      });
-    }
-
-    function bindModalEvents() {
-      refs.modalRoot.querySelectorAll('[data-action="close-modal"]').forEach(btn => {
-        btn.addEventListener('click', closeModal);
-      });
-
-      refs.modalRoot.querySelectorAll('[data-action="toggle-modal-tag"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const textarea = document.getElementById('entry-textarea');
-          if (textarea && state.modal?.type === 'entry') state.modal.text = textarea.value;
-          const tagId = String(btn.dataset.tagId);
-          if (state.modal.tags.has(String(tagId))) state.modal.tags.delete(String(tagId));
-          else state.modal.tags.add(String(tagId));
-          renderModal();
+      function bindEvents() {
+        els.themeToggle.addEventListener('click', toggleTheme);
+        els.tabSender.addEventListener('click', () => setView('sender'));
+        els.tabReceiver.addEventListener('click', () => setView('receiver'));
+        els.startSenderBtn.addEventListener('click', startSenderFlow);
+        els.stopSenderBtn.addEventListener('click', stopAll);
+        els.restartSenderBtn.addEventListener('click', restartSender);
+        els.copyCodeBtn.addEventListener('click', copyCode);
+        els.joinBtn.addEventListener('click', startReceiverFlow);
+        els.stopReceiverBtn.addEventListener('click', stopAll);
+        els.clearBtn.addEventListener('click', clearReceiverFields);
+        els.playBtn.addEventListener('click', () => autoRecoverAudio('manueller Fallback-Klick', true));
+        els.senderGainSlider.addEventListener('input', handleReceiverGainInput);
+        els.blinkThresholdSlider.addEventListener('input', handleBlinkThresholdInput);
+        els.blinkToggle.addEventListener('change', handleBlinkToggle);
+        els.joinCode.addEventListener('input', () => {
+          els.joinCode.value = els.joinCode.value.replace(/\D/g, '').slice(0, 6);
         });
-      });
-
-      refs.modalRoot.querySelectorAll('[data-action="pick-color"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.modal.color = btn.dataset.color;
-          renderModal();
-        });
-      });
-
-      refs.modalRoot.querySelectorAll('[data-action="delete-tag"]').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const tagId = btn.dataset.tagId;
-          const tag = state.tags.find(item => String(item.id) === String(tagId));
-          if (tag) await deleteTag(tag);
-        });
-      });
-
-      const entryTextarea = document.getElementById('entry-textarea');
-      entryTextarea?.addEventListener('input', () => {
-        if (state.modal?.type === 'entry') state.modal.text = entryTextarea.value;
-      });
-
-      document.getElementById('entry-form')?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const textarea = document.getElementById('entry-textarea');
-        state.modal.text = textarea.value;
-        await saveEntryFromModal();
-      });
-
-      document.getElementById('tags-form')?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const nameInput = document.getElementById('tag-name');
-        state.modal.name = nameInput.value;
-        await createTagFromModal();
-      });
-    }
-
-    async function saveEntryFromModal() {
-      const modal = state.modal;
-      const text = String(modal.text || '').trim();
-      if (!text) {
-        modal.error = 'Bitte Text eingeben.';
-        renderModal();
-        return;
-      }
-      modal.error = '';
-      modal.saving = true;
-      renderModal();
-      const payload = {
-        date: modal.date,
-        text,
-        tags: Array.from(modal.tags),
-        updated_at: new Date().toISOString()
-      };
-      try {
-        state.suppressRemoteUntil = Date.now() + 2500;
-        if (modal.isEdit && modal.id) {
-          const { error } = await db.from('entries').update(payload).eq('id', modal.id);
-          if (error) throw error;
-          showToast('Eintrag gespeichert');
-        } else {
-          payload.created_by = state.session?.user?.id || null;
-          const { error } = await db.from('entries').insert(payload);
-          if (error) throw error;
-          showToast('Eintrag angelegt');
-        }
-        closeModal();
-        await loadData(false);
-      } catch (err) {
-        state.modal = { ...modal, saving: false, error: err?.message || 'Speichern fehlgeschlagen.' };
-        renderModal();
-      }
-    }
-
-    async function deleteEntry(entry) {
-      const confirmed = window.confirm(`Eintrag vom ${formatDateLabel(entry.date)} löschen?`);
-      if (!confirmed) return;
-      try {
-        state.suppressRemoteUntil = Date.now() + 2500;
-        const { error } = await db.from('entries').delete().eq('id', entry.id);
-        if (error) throw error;
-        showToast('Eintrag gelöscht');
-        await loadData(false);
-      } catch (err) {
-        showToast(err?.message || 'Löschen fehlgeschlagen.', 'error');
-      }
-    }
-
-    async function createTagFromModal() {
-      const modal = state.modal;
-      const name = String(modal.name || '').trim();
-      if (!name) {
-        modal.error = 'Bitte einen Tag-Namen eingeben.';
-        renderModal();
-        return;
-      }
-      if (name.length > 30) {
-        modal.error = 'Der Tag-Name darf maximal 30 Zeichen haben.';
-        renderModal();
-        return;
-      }
-      modal.error = '';
-      modal.saving = true;
-      renderModal();
-      try {
-        state.suppressRemoteUntil = Date.now() + 2500;
-        const payload = {
-          name,
-          color: modal.color,
-          sort_order: state.tags.length
-        };
-        const { error } = await db.from('tags').insert(payload);
-        if (error) throw error;
-        showToast('Tag angelegt');
-        state.modal = { ...modal, name: '', saving: false };
-        await loadData(false);
-        openTagsModal();
-      } catch (err) {
-        state.modal = { ...modal, saving: false, error: err?.message || 'Tag konnte nicht angelegt werden.' };
-        renderModal();
-      }
-    }
-
-    async function deleteTag(tag) {
-      const confirmed = window.confirm(`Tag „${tag.name}“ löschen? Er wird aus allen Einträgen entfernt.`);
-      if (!confirmed) return;
-      try {
-        state.suppressRemoteUntil = Date.now() + 2500;
-        const affected = state.entries.filter(entry => (entry.tags || []).map(String).includes(String(tag.id)));
-        for (const entry of affected) {
-          const nextTags = (entry.tags || []).map(String).filter(id => String(id) !== String(tag.id));
-          const { error: updateError } = await db.from('entries').update({ tags: nextTags, updated_at: new Date().toISOString() }).eq('id', entry.id);
-          if (updateError) throw updateError;
-        }
-        const { error } = await db.from('tags').delete().eq('id', tag.id);
-        if (error) throw error;
-        state.activeFilters.delete(String(tag.id));
-        showToast('Tag gelöscht');
-        await loadData(false);
-        openTagsModal();
-      } catch (err) {
-        state.modal = { ...state.modal, error: err?.message || 'Tag konnte nicht gelöscht werden.' };
-        renderModal();
-      }
-    }
-
-    function parseCsvText(csvText) {
-      const text = String(csvText || '').replace(/^\ufeff/, '');
-      const rows = [];
-      let row = [];
-      let cell = '';
-      let inQuotes = false;
-
-      for (let index = 0; index < text.length; index += 1) {
-        const char = text[index];
-        const next = text[index + 1];
-
-        if (char === '"') {
-          if (inQuotes && next === '"') {
-            cell += '"';
-            index += 1;
-          } else {
-            inQuotes = !inQuotes;
+        document.addEventListener('visibilitychange', async () => {
+          if (document.visibilityState === 'visible' && state.mode) {
+            await requestWakeLock();
+            if (state.mode === 'receiver') await autoRecoverAudio('Seite wieder sichtbar');
           }
-          continue;
+        });
+        window.addEventListener('online', () => logEvent('Internet wieder verfügbar. Neue Pairings sind wieder möglich.'));
+        window.addEventListener('offline', () => logEvent('Internet weg. Neue Pairings sind jetzt nicht möglich, laufende Audioverbindungen können weiterlaufen.'));
+        window.addEventListener('pagehide', stopAll);
+      }
+
+      function setView(view) {
+        state.view = view;
+        const senderActive = view === 'sender';
+        els.tabSender.setAttribute('aria-selected', senderActive ? 'true' : 'false');
+        els.tabReceiver.setAttribute('aria-selected', senderActive ? 'false' : 'true');
+        els.viewSender.classList.toggle('hidden', !senderActive);
+        els.viewReceiver.classList.toggle('hidden', senderActive);
+      }
+
+      function toggleTheme() {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        els.themeToggle.setAttribute('aria-label', state.theme === 'dark' ? 'Zu hellem Modus wechseln' : 'Zu dunklem Modus wechseln');
+        updateThemeIcon();
+      }
+
+      function updateThemeIcon() {
+        els.themeIcon.innerHTML = state.theme === 'dark'
+          ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>'
+          : '<circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>';
+      }
+
+      function hydrateJoinCodeFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const join = (params.get('join') || '').replace(/\D/g, '').slice(0, 6);
+        if (join) {
+          els.joinCode.value = join;
+          setView('receiver');
+          logEvent('Raumcode aus Link übernommen.');
         }
+      }
 
-        if (char === ';' && !inQuotes) {
-          row.push(cell);
-          cell = '';
-          continue;
+      function peerOptions() {
+        return {
+          debug: 1,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          }
+        };
+      }
+
+      async function startSenderFlow() {
+        try {
+          setView('sender');
+          stopAll();
+          state.mode = 'sender';
+          updateAllStatus();
+          disableControlsForBusyState();
+          await requestWakeLock();
+          await ensureMicrophone();
+          await createSenderPeerWithRetry();
+          els.stopSenderBtn.disabled = false;
+          els.restartSenderBtn.disabled = false;
+          els.copyCodeBtn.disabled = false;
+          els.startSenderBtn.disabled = true;
+          logEvent('Babyseite aktiv. Warte auf Elternseite.');
+          updateAllStatus();
+        } catch (error) {
+          logEvent(userFacingError(error), true);
+          stopAll();
         }
+      }
 
-        if ((char === '\n' || char === '\r') && !inQuotes) {
-          if (char === '\r' && next === '\n') index += 1;
-          row.push(cell);
-          rows.push(row);
-          row = [];
-          cell = '';
-          continue;
+      async function restartSender() {
+        await startSenderFlow();
+      }
+
+      async function ensureMicrophone() {
+        if (state.localStream) return state.localStream;
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('Dieser Browser unterstützt kein Mikrofon via getUserMedia.');
         }
-
-        cell += char;
-      }
-
-      if (cell.length || row.length) {
-        row.push(cell);
-        rows.push(row);
-      }
-
-      return rows;
-    }
-
-    function normalizeImportDate(value) {
-      const input = String(value || '').trim();
-      if (!input) return '';
-      if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
-      const deMatch = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-      if (deMatch) {
-        const [, d, m, y] = deMatch;
-        return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      }
-      const parsed = new Date(input);
-      if (!Number.isNaN(parsed.getTime())) {
-        return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}-${String(parsed.getDate()).padStart(2, '0')}`;
-      }
-      return '';
-    }
-
-    function normalizeImportCreatedAt(value) {
-      const input = String(value || '').trim();
-      if (!input) return new Date().toISOString();
-      const deMatch = input.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:,\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
-      if (deMatch) {
-        const [, d, m, y, hh = '0', mm = '0', ss = '0'] = deMatch;
-        const dt = new Date(Number(y), Number(m) - 1, Number(d), Number(hh), Number(mm), Number(ss));
-        if (!Number.isNaN(dt.getTime())) return dt.toISOString();
-      }
-      const parsed = new Date(input);
-      return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
-    }
-
-    function splitImportedTags(value) {
-      return String(value || '')
-        .split(',')
-        .map(item => item.trim())
-        .filter(Boolean);
-    }
-
-    async function handleCsvImport(event) {
-      const file = event?.target?.files?.[0];
-      if (!file) return;
-      try {
-        const csvText = await file.text();
-        const rows = parseCsvText(csvText).filter(row => row.some(cell => String(cell || '').trim() !== ''));
-        if (rows.length < 2) throw new Error('Die CSV-Datei ist leer.');
-
-        const headers = rows[0].map(cell => String(cell || '').trim().toLowerCase());
-        const dateIndex = headers.findIndex(header => ['datum', 'date'].includes(header));
-        const textIndex = headers.findIndex(header => ['text', 'eintrag', 'notiz'].includes(header));
-        const tagsIndex = headers.findIndex(header => ['tags', 'tag'].includes(header));
-        const createdAtIndex = headers.findIndex(header => ['erstellt am', 'created at', 'created_at'].includes(header));
-
-        if (dateIndex === -1 || textIndex === -1) {
-          throw new Error('CSV-Header nicht erkannt. Erwartet werden mindestens Datum und Text.');
+        state.rawMicStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+            sampleRate: 48000
+          },
+          video: false
+        });
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) {
+          state.localStream = state.rawMicStream;
+          logEvent('Web Audio API fehlt. Original-Mikrofonstream wird verwendet.');
+          updateAllStatus();
+          return state.localStream;
         }
+        state.audioContext = new AudioCtx();
+        await state.audioContext.resume();
+        state.micSourceNode = state.audioContext.createMediaStreamSource(state.rawMicStream);
+        state.highPassNode = state.audioContext.createBiquadFilter();
+        state.highPassNode.type = 'highpass';
+        state.highPassNode.frequency.value = 120;
+        state.presenceNode = state.audioContext.createBiquadFilter();
+        state.presenceNode.type = 'peaking';
+        state.presenceNode.frequency.value = 2600;
+        state.presenceNode.Q.value = 0.8;
+        state.presenceNode.gain.value = 4;
+        state.gainNode = state.audioContext.createGain();
+        state.gainNode.gain.value = state.senderGain;
+        state.compressorNode = state.audioContext.createDynamicsCompressor();
+        state.compressorNode.threshold.value = -28;
+        state.compressorNode.knee.value = 22;
+        state.compressorNode.ratio.value = 6;
+        state.compressorNode.attack.value = 0.003;
+        state.compressorNode.release.value = 0.18;
+        state.processedDestination = state.audioContext.createMediaStreamDestination();
+        state.micSourceNode.connect(state.highPassNode);
+        state.highPassNode.connect(state.presenceNode);
+        state.presenceNode.connect(state.gainNode);
+        state.gainNode.connect(state.compressorNode);
+        state.compressorNode.connect(state.processedDestination);
+        state.localStream = state.processedDestination.stream;
+        logEvent('Mikrofon freigegeben. Sprach-Boost und Kompressor sind aktiv.');
+        updateAllStatus();
+        return state.localStream;
+      }
 
-        const imported = rows.slice(1).map(row => {
-          const date = normalizeImportDate(row[dateIndex]);
-          const textValue = String(row[textIndex] || '').trim();
-          const tagNames = tagsIndex === -1 ? [] : splitImportedTags(row[tagsIndex]);
-          const createdAt = createdAtIndex === -1 ? new Date().toISOString() : normalizeImportCreatedAt(row[createdAtIndex]);
-          return { date, text: textValue, tagNames, createdAt };
-        }).filter(item => item.date && item.text);
+      function handleReceiverGainInput() {
+        const nextGain = Number(els.senderGainSlider.value) / 100;
+        syncSenderGainUi(nextGain);
+        sendGainCommand(nextGain);
+        updateAllStatus();
+      }
 
-        if (!imported.length) throw new Error('Keine gültigen Zeilen zum Import gefunden.');
+      function syncSenderGainUi(gain = state.senderGain) {
+        state.senderGain = Number((Math.min(4, Math.max(1, Number(gain) || 1))).toFixed(2));
+        if (els.senderGainSlider) {
+          els.senderGainSlider.value = String(Math.round(state.senderGain * 100));
+        }
+        const percent = Math.round(state.senderGain * 100);
+        const hint = percent > 300
+          ? percent + '% — Extrem-Boost. Nur für sehr leise Quellen, weil Rauschen stärker hörbar werden kann.'
+          : percent > 200
+            ? percent + '% — starker Boost. Gut für leise Räume, aber bitte kurz probehören.'
+            : percent + '% — kräftiger Standard-Boost. Gute erste Einstellung für den Alltag.';
+        if (els.senderGainValue) els.senderGainValue.textContent = hint;
+        paintPill(els.senderBoostStatus, 'Boost ' + percent + '%', percent >= 300 ? 'yellowgreen' : 'online');
+      }
 
-        const existingTags = new Map(state.tags.map(tag => [String(tag.name || '').trim().toLowerCase(), tag]));
-        const missingTagNames = [];
-        imported.forEach(item => {
-          item.tagNames.forEach(name => {
-            const key = name.toLowerCase();
-            if (!existingTags.has(key) && !missingTagNames.some(value => value.toLowerCase() === key)) {
-              missingTagNames.push(name);
+      function sendGainCommand(gain) {
+        syncSenderGainUi(gain);
+        if (!state.dataConn || !state.dataConn.open) return;
+        try {
+          state.dataConn.send({ type: 'setGain', value: state.senderGain });
+        } catch (error) {
+          logEvent('Konnte Sender-Boost nicht senden: ' + userFacingError(error), true);
+        }
+      }
+
+      function applySenderGain(gain, source = 'lokal') {
+        const safeGain = Math.min(4, Math.max(1, Number(gain) || 1));
+        state.senderGain = Number(safeGain.toFixed(2));
+        if (state.gainNode) {
+          state.gainNode.gain.value = state.senderGain;
+        }
+        syncSenderGainUi(state.senderGain);
+        if (source === 'remote') {
+          logEvent('Sender-Boost wurde vom Empfänger auf ' + Math.round(state.senderGain * 100) + '% gesetzt.');
+        }
+      }
+
+      function handleBlinkThresholdInput() {
+        state.blinkThreshold = Number(els.blinkThresholdSlider.value) / 100;
+        syncBlinkUi();
+      }
+
+      function handleBlinkToggle() {
+        state.blinkEnabled = !!els.blinkToggle.checked;
+        syncBlinkUi();
+        updateVisualAlert();
+      }
+
+      function syncBlinkUi() {
+        const percent = Math.round(state.blinkThreshold * 100);
+        if (els.blinkThresholdSlider) els.blinkThresholdSlider.value = String(percent);
+        if (els.blinkThresholdValue) {
+          els.blinkThresholdValue.textContent = percent + '% — ' + (percent <= 18
+            ? 'schon leise Geräusche lösen die Warnfläche aus.'
+            : percent <= 35
+              ? 'mittlere Empfindlichkeit für normale Wohnräume.'
+              : 'nur deutlichere Geräusche lösen die Warnfläche aus.');
+        }
+        paintPill(els.blinkStatus, state.blinkEnabled ? 'Blinken an' : 'Blinken aus', state.blinkEnabled ? 'online' : '');
+      }
+
+      async function createSenderPeerWithRetry(maxAttempts = 5) {
+        let attempt = 0;
+        while (attempt < maxAttempts) {
+          attempt += 1;
+          state.roomCode = generateRoomCode();
+          renderRoomDetails();
+          try {
+            await createSenderPeer();
+            return;
+          } catch (error) {
+            if (error?.type === 'unavailable-id' && attempt < maxAttempts) {
+              logEvent('Code war bereits belegt. Neuer Code wird erzeugt.');
+              destroyPeerOnly();
+              continue;
             }
+            throw error;
+          }
+        }
+        throw new Error('Konnte keinen freien Raumcode erzeugen.');
+      }
+
+      function createSenderPeer() {
+        return new Promise((resolve, reject) => {
+          const peerId = senderPeerIdFromCode(state.roomCode);
+          const peer = new Peer(peerId, peerOptions());
+          state.peer = peer;
+          let settled = false;
+
+          peer.on('open', () => {
+            if (settled) return;
+            settled = true;
+            logEvent('Raum geöffnet: ' + state.roomCode);
+            updateAllStatus();
+            resolve();
+          });
+
+          peer.on('connection', (conn) => {
+            if (state.mode !== 'sender') {
+              conn.close();
+              return;
+            }
+            attachSenderConnection(conn);
+          });
+
+          peer.on('error', (error) => {
+            if (!settled) {
+              settled = true;
+              reject(error);
+              return;
+            }
+            logEvent('Peer-Fehler: ' + userFacingError(error), true);
+            updateAllStatus();
+          });
+
+          peer.on('disconnected', () => {
+            logEvent('Broker-Verbindung getrennt. PeerJS versucht Wiederverbindung.');
+            updateAllStatus();
+          });
+
+          peer.on('close', () => {
+            if (!state.suppressCloseLog) logEvent('Peer-Sitzung geschlossen.');
+            updateAllStatus();
           });
         });
-
-        state.suppressRemoteUntil = Date.now() + 3000;
-
-        if (missingTagNames.length) {
-          const newTagsPayload = missingTagNames.map((name, index) => ({
-            name,
-            color: TAG_COLORS[(state.tags.length + index) % TAG_COLORS.length],
-            sort_order: state.tags.length + index
-          }));
-          const { error: tagError } = await db.from('tags').insert(newTagsPayload);
-          if (tagError) throw tagError;
-          await loadData(false);
-        }
-
-        const refreshedTags = new Map(state.tags.map(tag => [String(tag.name || '').trim().toLowerCase(), tag]));
-        const payload = imported.map(item => ({
-          date: item.date,
-          text: item.text,
-          tags: item.tagNames.map(name => refreshedTags.get(name.toLowerCase())?.id).filter(Boolean),
-          created_by: state.session?.user?.id || null,
-          created_at: item.createdAt,
-          updated_at: item.createdAt
-        }));
-
-        const chunkSize = 200;
-        for (let index = 0; index < payload.length; index += chunkSize) {
-          const chunk = payload.slice(index, index + chunkSize);
-          const { error } = await db.from('entries').insert(chunk);
-          if (error) throw error;
-        }
-
-        await loadData(false);
-        showToast(`${payload.length} Einträge importiert`);
-      } catch (err) {
-        showToast(err?.message || 'CSV-Import fehlgeschlagen.', 'error');
-      } finally {
-        if (event?.target) event.target.value = '';
       }
-    }
 
-    async function exportCsv() {
-      const rows = [...state.entries]
-        .sort((a, b) => parseDate(a.date) - parseDate(b.date) || new Date(a.created_at || 0) - new Date(b.created_at || 0))
-        .map(entry => ({
-          date: entry.date,
-          text: String(entry.text || '').replace(/\r?\n/g, ' '),
-          tags: (entry.tags || []).map(tagId => getTagById(tagId)?.name).filter(Boolean).join(', '),
-          created_at: formatCreatedAt(entry.created_at)
-        }));
-      const header = ['Datum', 'Text', 'Tags', 'Erstellt am'];
-      const csv = [header, ...rows.map(row => [row.date, row.text, row.tags, row.created_at])]
-        .map(cols => cols.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(';'))
-        .join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `kalender-export-${todayString()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      showToast('CSV exportiert');
-    }
-
-    async function logout() {
-      try {
-        await db.auth.signOut();
-      } catch (err) {
-        showToast(err?.message || 'Abmelden fehlgeschlagen.', 'error');
-      }
-    }
-
-    async function loadData(showLoader = true) {
-      state.loading = showLoader;
-      renderMain(false, false);
-      const [entriesRes, tagsRes] = await Promise.all([
-        db.from('entries').select('*').order('date', { ascending: true }).order('created_at', { ascending: true }),
-        db.from('tags').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true })
-      ]);
-
-      if (entriesRes.error) throw entriesRes.error;
-      if (tagsRes.error) throw tagsRes.error;
-
-      state.entries = entriesRes.data || [];
-      state.tags = tagsRes.data || [];
-      state.loading = false;
-      renderFilterBar();
-      renderMain(false, false);
-    }
-
-    function subscribeRealtime() {
-      if (state.channel) return;
-      state.channel = db
-        .channel('app')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'entries' }, async () => {
-          if (Date.now() < state.suppressRemoteUntil) return;
-          try {
-            await loadData(false);
-            showToast('✓ Aktualisiert');
-          } catch (err) {
-            showToast(err?.message || 'Aktualisierung fehlgeschlagen.', 'error');
+      function attachSenderConnection(conn) {
+        if (state.dataConn && state.dataConn.open) {
+          try { state.dataConn.close(); } catch (_) {}
+        }
+        state.dataConn = conn;
+        conn.on('open', () => {
+          logEvent('Elternseite verbunden. Starte Audioaufbau.');
+          updateAllStatus();
+          try { conn.send({ type: 'currentGain', value: state.senderGain }); } catch (_) {}
+          dialReceiver(conn.peer);
+        });
+        conn.on('data', (payload) => {
+          if (payload?.type === 'setGain') {
+            applySenderGain(payload.value, 'remote');
+            try { conn.send({ type: 'currentGain', value: state.senderGain }); } catch (_) {}
           }
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, async () => {
-          if (Date.now() < state.suppressRemoteUntil) return;
-          try {
-            await loadData(false);
-            showToast('✓ Aktualisiert');
-          } catch (err) {
-            showToast(err?.message || 'Aktualisierung fehlgeschlagen.', 'error');
+        });
+        conn.on('close', () => {
+          if (state.outgoingCallPeerId === conn.peer && state.activeCall) {
+            try { state.activeCall.close(); } catch (_) {}
           }
-        })
-        .subscribe();
-    }
-
-    function cleanupRealtime() {
-      if (!state.channel) return;
-      db.removeChannel(state.channel);
-      state.channel = null;
-    }
-
-    async function initApp() {
-      renderAppShell();
-      renderHeader();
-      renderFilterBar();
-      renderBottomBar();
-      renderMain(false, true);
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && state.modal) closeModal();
-      }, { passive: true });
-      try {
-        await loadData(true);
-        subscribeRealtime();
-      } catch (err) {
-        showToast(err?.message || 'Daten konnten nicht geladen werden.', 'error');
-      }
-    }
-
-    async function boot() {
-      if (!HAS_SUPABASE_CONFIG) {
-        renderSetupScreen();
-        return;
+          logEvent('Elternseite getrennt.');
+          state.dataConn = null;
+          state.outgoingCallPeerId = null;
+          updateAllStatus();
+        });
+        conn.on('error', (error) => {
+          logEvent('Datenkanal-Fehler: ' + userFacingError(error), true);
+          updateAllStatus();
+        });
       }
 
-      let initialized = false;
+      function dialReceiver(receiverPeerId) {
+        if (!state.peer || !state.localStream) {
+          logEvent('Audioaufbau abgebrochen: Mikrofon oder Peer fehlt.', true);
+          return;
+        }
+        if (state.activeCall && state.outgoingCallPeerId === receiverPeerId) {
+          return;
+        }
+        if (state.activeCall) {
+          try { state.activeCall.close(); } catch (_) {}
+          state.activeCall = null;
+        }
 
-      db.auth.onAuthStateChange((_event, session) => {
-        state.session = session;
-        if (session && !initialized) {
-          initialized = true;
-          state.initialized = true;
-          initApp();
-        }
-        if (!session) {
-          initialized = false;
-          state.initialized = false;
-          cleanupRealtime();
-          closeModal();
-          renderLogin();
-        }
-      });
+        const call = state.peer.call(receiverPeerId, state.localStream, {
+          metadata: { direction: 'one-way-audio', roomCode: state.roomCode }
+        });
+        state.activeCall = call;
+        state.outgoingCallPeerId = receiverPeerId;
+        logEvent('Audioanruf an Elternseite gestartet.');
+        updateAllStatus();
 
-      try {
-        const { data, error } = await db.auth.getSession();
-        if (error) throw error;
-        state.session = data.session;
-        if (data.session && !initialized) {
-          initialized = true;
-          state.initialized = true;
-          await initApp();
-        } else if (!data.session) {
-          renderLogin();
-        }
-      } catch (err) {
-        renderLogin(authErrorMessage(err?.message || 'Session konnte nicht geprüft werden.'));
+        call.on('stream', () => {
+          logEvent('Gegenstelle bestätigt Audioverbindung.');
+          updateAllStatus();
+        });
+        call.on('close', () => {
+          logEvent('Audioanruf beendet.');
+          if (state.activeCall === call) state.activeCall = null;
+          updateAllStatus();
+          if (state.mode === 'sender' && state.dataConn?.open && receiverPeerId) {
+            window.setTimeout(() => {
+              if (state.mode === 'sender' && state.dataConn?.open && !state.activeCall) {
+                dialReceiver(receiverPeerId);
+              }
+            }, 1200);
+          }
+        });
+        call.on('error', (error) => {
+          logEvent('Audiofehler: ' + userFacingError(error), true);
+          if (state.activeCall === call) state.activeCall = null;
+          updateAllStatus();
+        });
       }
-    }
 
-    window.addEventListener('error', (event) => {
-      const message = event?.error?.message || event?.message || 'Unbekannter Fehler';
-      if (refs.toastRoot) showToast(message, 'error');
-    });
+      async function startReceiverFlow() {
+        const code = (els.joinCode.value || '').replace(/\D/g, '').slice(0, 6);
+        if (code.length !== 6) {
+          logEvent('Bitte einen 6-stelligen Raumcode eingeben.', true);
+          return;
+        }
+        try {
+          setView('receiver');
+          stopAll();
+          state.mode = 'receiver';
+          state.roomCode = code;
+          state.lastSignalAt = 0;
+          state.audioDetected = false;
+          state.trackMuted = false;
+          updateAllStatus();
+          disableControlsForBusyState();
+          await requestWakeLock();
+          await ensureReceiverAudioReady();
+          await createReceiverPeer();
+          connectReceiverDataChannel();
+          startHealthLoop();
+          els.stopReceiverBtn.disabled = false;
+          els.joinBtn.disabled = true;
+          logEvent('Elternseite aktiv. Warte auf Audio...');
+          updateAllStatus();
+        } catch (error) {
+          logEvent(userFacingError(error), true);
+          stopAll();
+        }
+      }
 
-    boot();
+      async function ensureReceiverAudioReady() {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) {
+          throw new Error('Dieser Browser unterstützt die Audio-Ausgabe über Web Audio nicht ausreichend.');
+        }
+        if (!state.receiverAudioContext) {
+          state.receiverAudioContext = new AudioCtx();
+          state.receiverAnalyser = state.receiverAudioContext.createAnalyser();
+          state.receiverAnalyser.fftSize = 1024;
+          state.receiverAnalyser.smoothingTimeConstant = 0.86;
+          state.receiverMasterGain = state.receiverAudioContext.createGain();
+          state.receiverMasterGain.gain.value = 1;
+          state.receiverAnalyser.connect(state.receiverMasterGain);
+          state.receiverMasterGain.connect(state.receiverAudioContext.destination);
+          state.meterArray = new Uint8Array(state.receiverAnalyser.fftSize);
+          state.freqArray = new Uint8Array(state.receiverAnalyser.frequencyBinCount);
+        }
+        await state.receiverAudioContext.resume();
+        state.recoveryFailures = 0;
+        hideManualRecovery();
+        logEvent('Audio-Ausgabe der Elternseite vorbereitet.');
+      }
+
+      function createReceiverPeer() {
+        return new Promise((resolve, reject) => {
+          const peer = new Peer(undefined, peerOptions());
+          state.peer = peer;
+          let settled = false;
+
+          peer.on('open', (peerId) => {
+            settled = true;
+            logEvent('Empfänger-Peer bereit: ' + peerId);
+            updateAllStatus();
+            resolve();
+          });
+
+          peer.on('call', (call) => {
+            if (state.mode !== 'receiver') {
+              call.close();
+              return;
+            }
+            receiveAudioCall(call);
+          });
+
+          peer.on('error', (error) => {
+            if (!settled) {
+              settled = true;
+              reject(error);
+              return;
+            }
+            logEvent('Peer-Fehler: ' + userFacingError(error), true);
+            updateAllStatus();
+          });
+
+          peer.on('disconnected', () => {
+            logEvent('Broker-Verbindung getrennt.');
+            updateAllStatus();
+          });
+
+          peer.on('close', () => {
+            if (!state.suppressCloseLog) logEvent('Empfänger-Sitzung geschlossen.');
+            updateAllStatus();
+          });
+        });
+      }
+
+      function connectReceiverDataChannel() {
+        const targetPeerId = senderPeerIdFromCode(state.roomCode);
+        const conn = state.peer.connect(targetPeerId, {
+          reliable: true,
+          metadata: { role: 'receiver', roomCode: state.roomCode, at: Date.now() }
+        });
+        state.dataConn = conn;
+        state.waitingForRemoteAudio = true;
+        clearTimeout(state.connectTimeout);
+        state.connectTimeout = window.setTimeout(() => {
+          if (state.waitingForRemoteAudio) {
+            logEvent('Noch kein Audio angekommen. Prüfe, ob die Babyseite wirklich läuft und der Code stimmt.', true);
+          }
+        }, 15000);
+
+        conn.on('open', () => {
+          logEvent('Pairing-Kanal offen. Warte auf Audioanruf vom Sender.');
+          sendGainCommand(state.senderGain);
+          updateAllStatus();
+        });
+        conn.on('data', (payload) => {
+          if (payload?.type === 'currentGain') {
+            syncSenderGainUi(payload.value);
+          }
+        });
+        conn.on('close', () => {
+          logEvent('Pairing-Kanal geschlossen.');
+          state.dataConn = null;
+          updateAllStatus();
+        });
+        conn.on('error', (error) => {
+          logEvent('Datenkanal-Fehler: ' + userFacingError(error), true);
+          updateAllStatus();
+        });
+      }
+
+      function receiveAudioCall(call) {
+        if (state.activeCall) {
+          try { state.activeCall.close(); } catch (_) {}
+        }
+        state.activeCall = call;
+        state.waitingForRemoteAudio = true;
+        call.answer();
+        logEvent('Audioanruf angenommen.');
+        updateAllStatus();
+
+        call.on('stream', async (remoteStream) => {
+          clearTimeout(state.connectTimeout);
+          state.waitingForRemoteAudio = false;
+          state.receiverStream = remoteStream;
+          attachRemoteTrackObservers(remoteStream);
+          mountReceiverStream(remoteStream);
+          logEvent('Remote-Audio empfangen.');
+          await autoRecoverAudio('Remote-Stream eingetroffen');
+          updateAllStatus();
+        });
+        call.on('close', () => {
+          logEvent('Remote-Audio beendet.');
+          if (state.activeCall === call) state.activeCall = null;
+          detachReceiverStream();
+          updateAllStatus();
+        });
+        call.on('error', (error) => {
+          logEvent('Audiofehler: ' + userFacingError(error), true);
+          if (state.activeCall === call) state.activeCall = null;
+          updateAllStatus();
+        });
+      }
+
+      function mountReceiverStream(remoteStream) {
+        if (!state.receiverAudioContext || !state.receiverAnalyser) return;
+        detachReceiverStream(false);
+        state.receiverStream = remoteStream;
+        state.receiverSourceNode = state.receiverAudioContext.createMediaStreamSource(remoteStream);
+        state.receiverSourceNode.connect(state.receiverAnalyser);
+        els.remoteAudio.srcObject = remoteStream;
+      }
+
+      function detachReceiverStream(clearStream = true) {
+        if (state.receiverSourceNode) {
+          try { state.receiverSourceNode.disconnect(); } catch (_) {}
+        }
+        state.receiverSourceNode = null;
+        if (clearStream) {
+          state.receiverStream = null;
+          els.remoteAudio.srcObject = null;
+        }
+        state.audioDetected = false;
+        state.smoothedLevel = 0;
+        state.displayLevel = 0;
+        state.lastSignalAt = 0;
+        updateVisualAlert();
+      }
+
+      function attachRemoteTrackObservers(stream) {
+        const [track] = stream.getAudioTracks();
+        if (!track) return;
+        track.onmute = () => {
+          state.trackMuted = true;
+          logEvent('Remote-Track meldet Stille oder Pause. Auto-Recovery läuft.');
+          autoRecoverAudio('Track mute');
+          updateAllStatus();
+        };
+        track.onunmute = () => {
+          state.trackMuted = false;
+          logEvent('Remote-Track liefert wieder Audio.');
+          updateAllStatus();
+        };
+        track.onended = () => {
+          state.trackMuted = true;
+          logEvent('Remote-Track wurde beendet.', true);
+          updateAllStatus();
+        };
+      }
+
+      async function autoRecoverAudio(reason = 'Prüfung', manual = false) {
+        if (state.mode !== 'receiver') return false;
+        const now = Date.now();
+        if (!manual && now - state.lastRecoverAt < 900) return false;
+        state.lastRecoverAt = now;
+        try {
+          if (!state.receiverAudioContext) await ensureReceiverAudioReady();
+          if (state.receiverAudioContext.state !== 'running') {
+            await state.receiverAudioContext.resume();
+          }
+          if (state.receiverStream && !state.receiverSourceNode) {
+            mountReceiverStream(state.receiverStream);
+          }
+          state.recoveryFailures = 0;
+          hideManualRecovery();
+          if (manual) {
+            logEvent('Manueller Fallback ausgelöst. Audio-Ausgabe wurde erneut angestoßen.');
+          } else {
+            logEvent('Auto-Recovery geprüft: ' + reason + '.');
+          }
+          updateAllStatus();
+          return true;
+        } catch (error) {
+          state.recoveryFailures += 1;
+          logEvent('Auto-Recovery fehlgeschlagen: ' + userFacingError(error), true);
+          if (state.recoveryFailures >= 3) {
+            showManualRecovery();
+          }
+          updateAllStatus();
+          return false;
+        }
+      }
+
+      function showManualRecovery() {
+        els.playBtn.disabled = false;
+        els.playBtn.classList.remove('hidden');
+      }
+
+      function hideManualRecovery() {
+        els.playBtn.disabled = true;
+        els.playBtn.classList.add('hidden');
+      }
+
+      function startHealthLoop() {
+        stopHealthLoop();
+        state.healthTimer = window.setInterval(() => {
+          if (state.mode !== 'receiver') return;
+          const needsResume = state.receiverAudioContext && state.receiverAudioContext.state !== 'running';
+          const silentTooLong = state.activeCall && state.receiverStream && !state.trackMuted && Date.now() - state.lastSignalAt > 6000;
+          if (needsResume) autoRecoverAudio('AudioContext war ' + state.receiverAudioContext.state);
+          if (silentTooLong) autoRecoverAudio('längere Stille trotz aktiver Verbindung');
+        }, 2500);
+      }
+
+      function stopHealthLoop() {
+        if (state.healthTimer) {
+          clearInterval(state.healthTimer);
+          state.healthTimer = null;
+        }
+      }
+
+      function startMeterLoop() {
+        if (state.meterFrame) cancelAnimationFrame(state.meterFrame);
+        const draw = () => {
+          let displayLevel = 0;
+          let audioDetected = false;
+          if (state.receiverAnalyser && state.receiverSourceNode && state.meterArray && state.freqArray) {
+            state.receiverAnalyser.getByteTimeDomainData(state.meterArray);
+            let sum = 0;
+            for (let i = 0; i < state.meterArray.length; i += 1) {
+              const centered = (state.meterArray[i] - 128) / 128;
+              sum += centered * centered;
+            }
+            const rms = Math.sqrt(sum / state.meterArray.length);
+            state.receiverAnalyser.getByteFrequencyData(state.freqArray);
+            let freqSum = 0;
+            const bins = Math.min(64, state.freqArray.length);
+            for (let i = 2; i < bins; i += 1) freqSum += state.freqArray[i] / 255;
+            const freqAvg = bins > 2 ? freqSum / (bins - 2) : 0;
+            const combined = Math.max(rms, freqAvg * 0.55);
+            displayLevel = Math.min(1, Math.pow(combined * 7.5, 0.62));
+            state.smoothedLevel = Math.max(displayLevel, state.smoothedLevel * 0.84);
+            audioDetected = combined > 0.018;
+            if (audioDetected) state.lastSignalAt = Date.now();
+          } else {
+            state.smoothedLevel *= 0.84;
+          }
+          state.displayLevel = Math.min(1, state.smoothedLevel);
+          state.audioDetected = audioDetected || (Date.now() - state.lastSignalAt < 1200 && state.lastSignalAt > 0);
+          drawMeter(state.displayLevel, state.audioDetected);
+          updateVisualAlert();
+          state.meterFrame = requestAnimationFrame(draw);
+        };
+        draw();
+      }
+
+      function drawMeter(level, signalPresent) {
+        const canvas = els.meterCanvas;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        ctx.clearRect(0, 0, width, height);
+
+        const grad = ctx.createLinearGradient(0, 0, 0, height);
+        grad.addColorStop(0, 'rgba(255,255,255,0.12)');
+        grad.addColorStop(1, 'rgba(255,255,255,0.02)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, width, height);
+
+        const bars = 26;
+        const gap = 10;
+        const barWidth = (width - gap * (bars + 1)) / bars;
+        for (let i = 0; i < bars; i += 1) {
+          const bin = state.freqArray ? state.freqArray[Math.min(i * 2, state.freqArray.length - 1)] / 255 : 0;
+          const boosted = Math.min(1, Math.pow(bin * 1.7, 0.7));
+          const heightFactor = Math.max(level * 0.55, boosted * 0.95);
+          const barHeight = Math.max(10, heightFactor * (height - 44));
+          const x = gap + i * (barWidth + gap);
+          const y = height - barHeight - 16;
+          const hue = i < 18 ? '79,255,79' : '255,97,97';
+          ctx.fillStyle = 'rgba(' + hue + ',' + (0.18 + boosted * 0.82) + ')';
+          roundRect(ctx, x, y, barWidth, barHeight, 8);
+          ctx.fill();
+        }
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.lineWidth = 1;
+        for (let i = 1; i <= 4; i += 1) {
+          const y = height - 16 - ((height - 44) / 4) * i;
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+
+        const markerX = width * Math.min(1, Math.max(0, state.blinkThreshold));
+        ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(markerX, 12);
+        ctx.lineTo(markerX, height - 8);
+        ctx.stroke();
+
+        els.meterValue.textContent = Math.round(level * 100) + '%';
+        canvas.setAttribute('aria-label', (signalPresent ? 'Audio erkannt, aktueller Pegel ' : 'Derzeit kein Audio erkannt, letzter Pegel ') + Math.round(level * 100) + ' Prozent.');
+      }
+
+      function roundRect(ctx, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + width, y, x + width, y + height, r);
+        ctx.arcTo(x + width, y + height, x, y + height, r);
+        ctx.arcTo(x, y + height, x, y, r);
+        ctx.arcTo(x, y, x + width, y, r);
+        ctx.closePath();
+      }
+
+      function updateVisualAlert() {
+        const blinkActive = state.blinkEnabled && state.displayLevel >= state.blinkThreshold && state.audioDetected;
+        els.meterShell.classList.toggle('blinking', blinkActive);
+      }
+
+      function clearReceiverFields() {
+        stopAll();
+        els.joinCode.value = '';
+        setView('receiver');
+        logEvent('Felder zurückgesetzt.');
+      }
+
+      async function copyCode() {
+        if (!state.roomCode) return;
+        const text = state.roomCode + '\n' + buildJoinUrl(state.roomCode);
+        try {
+          await navigator.clipboard.writeText(text);
+          logEvent('Code und Join-Link kopiert.');
+        } catch (_) {
+          logEvent('Kopieren fehlgeschlagen. Code ist sichtbar auf dem Display.', true);
+        }
+      }
+
+      function stopAll() {
+        clearTimeout(state.connectTimeout);
+        state.connectTimeout = null;
+        state.waitingForRemoteAudio = false;
+        stopHealthLoop();
+
+        if (state.activeCall) {
+          try { state.activeCall.close(); } catch (_) {}
+        }
+        state.activeCall = null;
+
+        if (state.dataConn) {
+          try { state.dataConn.close(); } catch (_) {}
+        }
+        state.dataConn = null;
+
+        state.suppressCloseLog = true;
+        destroyPeerOnly();
+        state.suppressCloseLog = false;
+
+        if (state.rawMicStream) {
+          state.rawMicStream.getTracks().forEach(track => track.stop());
+        }
+        state.rawMicStream = null;
+        state.localStream = null;
+        state.micSourceNode = null;
+        state.highPassNode = null;
+        state.presenceNode = null;
+        state.gainNode = null;
+        state.compressorNode = null;
+        state.processedDestination = null;
+        if (state.audioContext) {
+          try { state.audioContext.close(); } catch (_) {}
+        }
+        state.audioContext = null;
+
+        detachReceiverStream();
+        if (state.receiverAudioContext) {
+          try { state.receiverAudioContext.close(); } catch (_) {}
+        }
+        state.receiverAudioContext = null;
+        state.receiverAnalyser = null;
+        state.receiverMasterGain = null;
+        state.meterArray = null;
+        state.freqArray = null;
+        state.trackMuted = false;
+        state.lastSignalAt = 0;
+        state.displayLevel = 0;
+        state.smoothedLevel = 0;
+        state.audioDetected = false;
+        updateVisualAlert();
+
+        if (state.wakeLock) {
+          try { state.wakeLock.release(); } catch (_) {}
+        }
+        state.wakeLock = null;
+
+        hideManualRecovery();
+        state.recoveryFailures = 0;
+        state.lastRecoverAt = 0;
+        state.outgoingCallPeerId = null;
+        const hadMode = state.mode;
+        state.mode = null;
+        state.roomCode = hadMode === 'sender' ? '' : state.roomCode;
+        renderRoomDetails();
+        syncSenderGainUi();
+        syncBlinkUi();
+        enableControlsDefault();
+        updateAllStatus();
+      }
+
+      function destroyPeerOnly() {
+        if (state.peer) {
+          try { state.peer.destroy(); } catch (_) {}
+        }
+        state.peer = null;
+      }
+
+      function enableControlsDefault() {
+        els.startSenderBtn.disabled = false;
+        els.stopSenderBtn.disabled = true;
+        els.restartSenderBtn.disabled = true;
+        els.copyCodeBtn.disabled = !state.roomCode;
+        els.joinBtn.disabled = false;
+        els.stopReceiverBtn.disabled = true;
+      }
+
+      function disableControlsForBusyState() {
+        els.startSenderBtn.disabled = true;
+        els.joinBtn.disabled = true;
+      }
+
+      function updateAllStatus() {
+        const senderOn = state.mode === 'sender';
+        const receiverOn = state.mode === 'receiver';
+        const dataOpen = !!(state.dataConn && state.dataConn.open);
+        const callOpen = !!state.activeCall;
+        const audioContextReady = !!state.receiverAudioContext && state.receiverAudioContext.state === 'running';
+        const connectionStanding = receiverOn && (dataOpen || callOpen || state.waitingForRemoteAudio || !!state.receiverStream);
+        const realAudio = receiverOn && audioContextReady && !!state.receiverStream && state.audioDetected;
+
+        paintPill(els.senderStatus, senderOn ? (state.peer ? 'Sender aktiv' : 'Sender startet') : 'Bereit', senderOn && state.peer ? 'online' : '');
+        paintPill(els.receiverStatus, receiverOn ? (state.peer ? 'Empfang aktiv' : 'Empfang startet') : 'Bereit', receiverOn && state.peer ? 'online' : '');
+        paintPill(els.micStatus, state.localStream ? 'Mikrofon an' : 'Mikrofon aus', state.localStream ? 'online' : '');
+        paintPill(els.callStatus,
+          realAudio ? 'Ton wird übertragen' : connectionStanding ? (state.waitingForRemoteAudio ? 'Warte auf Audio' : 'Verbindung steht, aber derzeit still') : 'Kein Audio',
+          realAudio ? 'green' : connectionStanding ? 'yellowgreen' : '');
+        paintPill(els.recoveryStatus,
+          receiverOn ? (state.recoveryFailures ? 'Auto-Recovery prüft erneut' : 'Auto-Recovery aktiv') : 'Auto-Recovery aus',
+          receiverOn ? 'online' : '');
+        const wakeText = state.wakeLock ? 'Wake Lock an' : 'Wake Lock aus';
+        const wakeCls = state.wakeLock ? 'online' : (location.protocol !== 'https:' ? 'yellowgreen' : '');
+        paintPill(els.wakeStatus, wakeText, wakeCls);
+
+        els.lampRed.classList.toggle('active', !connectionStanding && !realAudio);
+        els.lampYellow.classList.toggle('active', connectionStanding && !realAudio);
+        els.lampGreen.classList.toggle('active', realAudio);
+
+        if (!receiverOn) {
+          els.ampelLabel.textContent = 'Noch nicht verbunden';
+          els.ampelHint.textContent = 'Sobald die Verbindung steht, schaltet die Ampel auf gelbgrün. Bei echtem Ton wird sie leuchtend grün.';
+          els.parentHeadline.textContent = 'Bereit zum Verbinden';
+          els.parentSubline.textContent = 'Nach dem Verbinden prüft die App laufend, ob wieder Ton anliegt, und stößt die Wiedergabe automatisch neu an.';
+        } else if (state.waitingForRemoteAudio) {
+          els.ampelLabel.textContent = 'Verbindung wird aufgebaut';
+          els.ampelHint.textContent = 'Der Pairing-Kanal steht oder der Audioanruf läuft gerade an.';
+          els.parentHeadline.textContent = 'Warte auf Audio';
+          els.parentSubline.textContent = 'Die Elternseite ist aktiv und nimmt den ankommenden Stream automatisch in Betrieb.';
+        } else if (realAudio) {
+          els.ampelLabel.textContent = 'Ton wird übertragen';
+          els.ampelHint.textContent = 'Die Ampel ist nur dann leuchtend grün, wenn echtes Audiosignal erkannt wird.';
+          els.parentHeadline.textContent = 'Ton wird übertragen';
+          els.parentSubline.textContent = 'Alles wirkt gesund: Verbindung steht, Audio-Ausgabe läuft und der Pegelmesser sieht echtes Signal.';
+        } else if (connectionStanding) {
+          els.ampelLabel.textContent = 'Verbindung steht, aber derzeit still';
+          els.ampelHint.textContent = 'Gelbgrün bedeutet: verbunden und bereit, gerade aber ohne erkannten Geräuschpegel.';
+          els.parentHeadline.textContent = 'Verbindung steht, aber derzeit still';
+          els.parentSubline.textContent = 'Sobald wieder Ton anliegt, springt die Ampel automatisch auf leuchtend grün.';
+        } else {
+          els.ampelLabel.textContent = 'Noch nicht verbunden';
+          els.ampelHint.textContent = 'Gib einen Raumcode ein und starte die Elternseite.';
+          els.parentHeadline.textContent = 'Noch keine Verbindung';
+          els.parentSubline.textContent = 'Ohne aktiven Pairing-Kanal oder Anruf bleibt die Anzeige rot.';
+        }
+      }
+
+      function paintPill(el, text, cls = '') {
+        el.textContent = text;
+        el.className = 'pill' + (cls ? ' ' + cls : '');
+      }
+
+      function generateRoomCode() {
+        const array = new Uint32Array(1);
+        crypto.getRandomValues(array);
+        return String(100000 + (array[0] % 900000));
+      }
+
+      function senderPeerIdFromCode(code) {
+        return 'baby-' + code;
+      }
+
+      function buildJoinUrl(code) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('join', code);
+        return url.toString();
+      }
+
+      function renderRoomDetails() {
+        if (!state.roomCode) {
+          els.roomCode.textContent = '------';
+          els.roomLink.textContent = 'Link wird nach dem Start erzeugt.';
+          els.copyCodeBtn.disabled = true;
+          return;
+        }
+        els.roomCode.textContent = state.roomCode;
+        els.roomLink.textContent = buildJoinUrl(state.roomCode);
+        els.copyCodeBtn.disabled = false;
+      }
+
+      function userFacingError(error) {
+        if (!error) return 'Unbekannter Fehler.';
+        if (typeof error === 'string') return error;
+        const type = error.type || '';
+        const msg = error.message || String(error);
+        if (type === 'peer-unavailable') return 'Der Raumcode wurde nicht gefunden. Läuft die Babyseite?';
+        if (type === 'network') return 'Netzwerkfehler. Prüfe WLAN und Internet für das Pairing.';
+        if (type === 'unavailable-id') return 'Dieser Raumcode ist bereits belegt.';
+        if (/Permission denied|NotAllowedError/i.test(msg)) return 'Mikrofon-Zugriff wurde nicht erlaubt.';
+        if (/Could not start audio source|NotFoundError/i.test(msg)) return 'Kein Mikrofon gefunden.';
+        return msg;
+      }
+
+      function logEvent(message, isError = false) {
+        const li = document.createElement('li');
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        li.innerHTML = '<span class="log-time">' + time + '</span><span>' + escapeHtml(message) + '</span>';
+        if (isError) li.style.borderColor = 'color-mix(in oklab, var(--color-error) 35%, transparent)';
+        els.logList.prepend(li);
+        while (els.logList.children.length > 24) {
+          els.logList.removeChild(els.logList.lastChild);
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+    })();
   </script>
 </body>
 </html>
